@@ -2,29 +2,31 @@ require('dotenv').config();
 
 const express = require('express');
 const app = express();
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+
+const client = require('./db/client');
+client.connect();
+
+// Middleware
+app.use(morgan('dev'));
+app.use(bodyParser.json());
+app.use(cors());
+
+app.use((req, res, next) => {
+  console.log("<____Body Logger START____>");
+  console.log(req.body);
+  console.log("<_____Body Logger END_____>");
+
+  next();
+});
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello, world!');
 });
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+const apiRouter = require('./api');
+app.use('/api', apiRouter);
 
-const mysql = require('mysql');
-const dbHost = process.env.DB_HOST;
-const dbUser = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const dbName = process.env.DB_NAME;
-
-const db = mysql.createConnection({
-  host: dbHost,
-  user: dbUser,
-  password: dbPassword,
-  database: dbName
-});
-
-db.connect((err) => {
-  if (err) throw err;
-  console.log('Connected to the database');
-});
+module.exports = app;
