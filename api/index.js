@@ -4,8 +4,8 @@ const jwt = require('jsonwebtoken');
 const { getUserById } = require('../db');
 const { JWT_SECRET } = process.env;
 
-// GET /api/farm - Passing test
-router.get('/farm', async (req, res, next) => {
+// GET /api/code - Passing test
+router.get('/code', async (req, res, next) => {
   res.send({ message: 'Welcome to Code Buddies' });
 });
 

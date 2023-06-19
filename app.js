@@ -5,9 +5,7 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-
-const client = require('./db/client');
-client.connect();
+const mysql = require('mysql');
 
 // Middleware
 app.use(morgan('dev'));
@@ -22,6 +20,23 @@ app.use((req, res, next) => {
   next();
 });
 
+const dbHost = process.env.DB_HOST;
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbName = process.env.DB_NAME;
+
+const db = mysql.createConnection({
+  host: dbHost,
+  user: dbUser,
+  password: dbPassword,
+  database: dbName
+});
+
+db.connect((err) => {
+  if (err) throw err;
+  console.log('Connected to the database');
+});
+
 app.get('/', (req, res) => {
   res.send('Hello, world!');
 });
@@ -29,4 +44,7 @@ app.get('/', (req, res) => {
 const apiRouter = require('./api');
 app.use('/api', apiRouter);
 
-module.exports = app;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

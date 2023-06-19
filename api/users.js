@@ -1,11 +1,12 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { requireUser, requireAdmin } = require('./authMiddleware');
+const db = require('../db/db');
+const { requireUser, requireAdmin } = require('./utils');
 
 const usersRouter = express.Router();
 
-usersRouter.post('/user/register', (req, res) => {
+usersRouter.post('/register', (req, res) => {
   const { name, email, username, password } = req.body;
   const saltRounds = 10;
 
@@ -41,18 +42,29 @@ usersRouter.post('/user/register', (req, res) => {
 
 usersRouter.post('/login', function (req, res) {
   const { username, password } = req.body;
-  const sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
-  db.query(sql, [username, password], function (err, results) {
+  const sql = 'SELECT * FROM users WHERE username = ?';
+  db.query(sql, [username], function (err, results) {
     if (err) throw err;
     if (results.length > 0) {
       const user = results[0];
-      const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
-      res.json({ token });
+
+      // Compare hashed passwords
+      bcrypt.compare(password, user.password, function(err, result) {
+        if(result) {
+          // Passwords match
+          const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
+          res.json({ token });
+        } else {
+          // Passwords don't match
+          res.status(401).send('Invalid credentials');
+        }
+      });
     } else {
       res.status(401).send('Invalid credentials');
     }
   });
 });
+
 
 // Change is_buddy field to true to promote a regular user to a buddy, requires authentication
 usersRouter.put('/promote/:id', requireUser, requireAdmin, (req, res) => {
