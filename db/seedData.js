@@ -9,13 +9,6 @@ const saltRounds = 10;
 //   database: 'CodeBuddiesDB'
 // });
 
-// const db = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'root',
-//   password: 'COdebuddi#s',
-//   database: 'CodeBuddiesDB'
-// });
-
 const users = [
   {
     name: 'Hollye',
