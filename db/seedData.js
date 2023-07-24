@@ -2,19 +2,19 @@ const mysql = require('mysql');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const db = mysql.createConnection({
-  host: 'codebuddiesdb.c9nlci7opfpv.us-east-2.rds.amazonaws.com',
-  user: 'admin',
-  password: 'pGRy8i3j6f6sxpN',
-  database: 'CodeBuddiesDB'
-});
+// const db = mysql.createConnection({
+//   host: 'codebuddiesdb.c9nlci7opfpv.us-east-2.rds.amazonaws.com',
+//   user: 'admin',
+//   password: 'pGRy8i3j6f6sxpN',
+//   database: 'CodeBuddiesDB'
+// });
 
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'COdebuddi#s',
-  database: 'CodeBuddiesDB'
-});
+// const db = mysql.createConnection({
+//   host: 'localhost',
+//   user: 'root',
+//   password: 'COdebuddi#s',
+//   database: 'CodeBuddiesDB'
+// });
 
 const users = [
   {
