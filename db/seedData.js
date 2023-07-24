@@ -9,6 +9,13 @@ const db = mysql.createConnection({
   database: 'CodeBuddiesDB'
 });
 
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'COdebuddi#s',
+  database: 'CodeBuddiesDB'
+});
+
 const users = [
   {
     name: 'Hollye',
