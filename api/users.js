@@ -19,7 +19,6 @@ usersRouter.post('/register', (req, res) => {
     const sql = 'INSERT INTO users (name, email, username, password) VALUES (?, ?, ?, ?)';
     db.query(sql, [name, email, username, hashedPassword], (err, result) => {
       if (err) {
-        // Check if the error is due to a duplicate entry
         if (err.code === 'ER_DUP_ENTRY') {
           return res.status(409).send('Email or username already exists');
         }
@@ -29,7 +28,7 @@ usersRouter.post('/register', (req, res) => {
       const userId = result.insertId;
 
       const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-        expiresIn: '1h', // Set the expiration time for the token
+        expiresIn: '1h', 
       });
 
       res.json({
@@ -42,20 +41,26 @@ usersRouter.post('/register', (req, res) => {
 
 usersRouter.post('/login', function (req, res) {
   const { username, password } = req.body;
+
+  if (!username) {
+    return res.status(400).send('Username is required');
+  }
+
+  if (!password) {
+    return res.status(400).send('Password is required');
+  }
+
   const sql = 'SELECT * FROM users WHERE username = ?';
   db.query(sql, [username], function (err, results) {
     if (err) throw err;
     if (results.length > 0) {
       const user = results[0];
 
-      // Compare hashed passwords
       bcrypt.compare(password, user.password, function(err, result) {
         if(result) {
-          // Passwords match
           const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
           res.json({ token });
         } else {
-          // Passwords don't match
           res.status(401).send('Invalid credentials');
         }
       });
@@ -65,8 +70,6 @@ usersRouter.post('/login', function (req, res) {
   });
 });
 
-
-// Change is_buddy field to true to promote a regular user to a buddy, requires authentication
 usersRouter.put('/promote/:id', requireUser, requireAdmin, (req, res) => {
   const userId = req.params.id;
   const sql = 'UPDATE users SET is_buddy = TRUE WHERE id = ?';

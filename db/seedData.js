@@ -37,19 +37,20 @@ const seedUsers = () => {
 
     // Create users table
     const createQuery = `
-      CREATE TABLE users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        is_buddy BOOLEAN DEFAULT FALSE,
-        isAdmin BOOLEAN DEFAULT FALSE,
-        name VARCHAR(100),
-        email VARCHAR(100) UNIQUE NOT NULL,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL,
-        pfp_url VARCHAR(255),
-        primary_language VARCHAR(50),
-        secondary_language VARCHAR(50)
-      )
-    `;
+  CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    googleId VARCHAR(255),
+    is_buddy BOOLEAN DEFAULT FALSE,
+    isAdmin BOOLEAN DEFAULT FALSE,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    pfp_url VARCHAR(255),
+    primary_language VARCHAR(50),
+    secondary_language VARCHAR(50)
+  )
+`;
     db.query(createQuery, (err, result) => {
       if (err) throw err;
       console.log('Created users table');
