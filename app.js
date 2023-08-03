@@ -6,19 +6,11 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const mysql = require('mysql');
-const passport = require('passport');
-require('./api/auth/passport');
 
 // Middleware
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cors());
-
-app.use(passport.initialize());
-
-const authRoutes = require('./api/authRoutes');
-
-app.use('/api/auth', authRoutes);
 
 app.use((req, res, next) => {
   console.log("<____Body Logger START____>");
