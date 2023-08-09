@@ -112,29 +112,12 @@
 
 // !--------------------------------- my code below -------------------------------! //
 
-const mysql2 = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-// const bluebird = require('bluebird');
+const db = require('./db');
 const saltRounds = 10;
-
-    const db = mysql2.createPool({
-      // host: 'localhost',
-      // user: 'root',
-      // password: 'COdebuddi#s',
-      // database: 'CodeBuddiesDB',
-      // // Promise: bluebird,
-  host: 'codebuddiesdb.c9nlci7opfpv.us-east-2.rds.amazonaws.com',
-  user: 'admin',
-  password: 'pGRy8i3j6f6sxpN',
-  database: 'CodeBuddiesDB'
-
-    });
 
 const dropTables = async () => {
   try {
-
-    // (await db).connect()
-
     console.log("connected");
 
     await db.query(`
@@ -258,17 +241,9 @@ const seedUserData = async () => {
         is_buddy: true,
         isAdmin: true
       },
-      {
-        name: 'Friday',
-        email: 'i_am_a_cat@gmail.com',
-        username: 'Friday',
-        password: 'aaa123',
-        is_buddy: true,
-        isAdmin: true
-      },
     ];
 
-    const insertUser = await Promise.all(users.map(createUser))
+    await Promise.all(users.map(createUser))
 
 }
 
