@@ -1,26 +1,27 @@
+const db = require("./db")
+
 // ! creates a new event 
-async function createUser(user) {
+async function createEvent(event) {
   try {
     
-    const {name, email, username, password, is_buddy, isAdmin} = user
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const {buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link} = event
+    console.log(event)
     const [results,rows,fields] = await db.execute(`
-      INSERT INTO users (name, email, username, password, is_buddy, isAdmin) 
-      VALUES (?, ?, ?, ?, ?, ?);
-    `, [name, email, username, hashedPassword, is_buddy, isAdmin],
+      INSERT INTO events (buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link) 
+      VALUES (?, ?, ?, ?, ?, ?, ?);
+    `, [buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link],
     );
 
     const [data] = await db.execute(`
       SELECT * 
-      FROM users
-      WHERE username='${username}';`,
+      FROM events
+      WHERE buddy_one='${buddy_one}';`,
     );
 
-    delete data[0].password
-    console.log("results:", data); 
+    console.log("Added Event Details ->", data); 
 
   } catch (error) {
-    console.error("error adding users");
+    console.error("error adding event");
     throw error;
   }
 }
@@ -47,3 +48,7 @@ async function createUser(user) {
 
 
 // ! search for specific event
+
+module.exports = {
+ createEvent,
+};
