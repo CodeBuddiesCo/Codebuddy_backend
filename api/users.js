@@ -28,7 +28,7 @@ usersRouter.post('/register', (req, res) => {
       const userId = result.insertId;
 
       const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-        expiresIn: '1h', 
+        expiresIn: '1h',
       });
 
       res.json({
@@ -42,38 +42,51 @@ usersRouter.post('/register', (req, res) => {
 usersRouter.post('/login', function (req, res) {
   const { username, password } = req.body;
 
-  console.log('Login request received for username:', username); // Added log
+  console.log('Login request received for username:', username);
 
   if (!username) {
+    console.log('No username provided');
     return res.status(400).send('Username is required');
   }
 
   if (!password) {
+    console.log('No password provided');
     return res.status(400).send('Password is required');
   }
 
   const sql = 'SELECT * FROM users WHERE username = ?';
   db.query(sql, [username], function (err, results) {
-    if (err) throw err;
+    if (err) {
+      console.log('Database query error:', err);
+      return res.status(500).send('Internal Server Error');
+    }
+
     if (results.length > 0) {
       const user = results[0];
+      console.log('User found:', user.username);
 
       bcrypt.compare(password, user.password, function(err, result) {
-        if(result) {
+        if (err) {
+          console.log('bcrypt compare error:', err);
+          return res.status(500).send('Internal Server Error');
+        }
+
+        if (result) {
           const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
-          console.log('Login successful, token:', token); // Added log
-          res.json({ token });
+          console.log('Login successful, token:', token);
+          return res.json({ token });
         } else {
-          console.log('Login failed: Invalid credentials'); // Added log
-          res.status(401).send('Invalid credentials');
+          console.log('Login failed: Invalid credentials');
+          return res.status(401).send('Invalid credentials');
         }
       });
     } else {
-      console.log('Login failed: No user found'); // Added log
-      res.status(401).send('Invalid credentials');
+      console.log('Login failed: No user found');
+      return res.status(401).send('Invalid credentials');
     }
   });
 });
+
 
 usersRouter.put('/promote/:id', requireUser, requireAdmin, (req, res) => {
   const userId = req.params.id;
