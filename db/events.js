@@ -1,6 +1,6 @@
 const db = require("./db")
 
-// ! creates a new event 
+// * creates a new event - working
 async function createEvent(event) {
   try {
     
@@ -26,20 +26,127 @@ async function createEvent(event) {
   }
 }
 
-// ! retrieves all events 
+// * retrieves all events - working returns an array with objects
+async function getAllEvents() {
 
+  try {
 
-// ! retrieves all future events
+    const [events] = await db.execute(`
+      SELECT *
+      FROM events;`
+    );
 
+    console.log("All Events ->", events);
 
-// ! gets a single events data by ID
+  } catch (error) {
+    console.error("Error getting all Events");
+    throw error;
+  }
 
+}
 
-// ! Retrieves a list of events that belong to a specific language
+// * retrieves all future events - working returns array
+async function getAllFutureEvents() {
 
+  const date = new Date().toJSON();
 
-// ! Retrieves a list of events that belong to a specific buddy 
+  try {
 
+    const [events] = await db.execute(`
+      SELECT *
+      FROM events
+      WHERE date_time > "${date}";`
+    );
+
+    console.log("Upcoming Events ->", events);
+
+  } catch (error) {
+    console.error("Error getting upcoming events");
+    throw error;
+  }
+
+}
+
+// * gets a single event data by ID - working returns array
+async function getEventById(id) {
+
+  try {
+
+    const [event] = await db.execute(`
+      SELECT *
+      FROM events
+      WHERE id = "${id}";`
+    );
+
+    console.log("Event by Id", id, "->", event);
+
+  } catch (error) {
+    console.error("Error getting event by Id", id);
+    throw error;
+  }
+
+}
+
+// * Retrieves a list of events that belong to a specific Buddy
+async function getEventsByBuddy(buddyName) {
+
+  try {
+
+    const [events] = await db.execute(`
+      SELECT *
+      FROM events
+      WHERE buddy_one = "${buddyName}" OR buddy_two = "${buddyName}";`
+    );
+
+    console.log("Events by Buddy,", buddyName, "->", events);
+
+  } catch (error) {
+    console.error("Error getting event by Buddy", buddyName);
+    throw error;
+  }
+
+}
+
+// * Retrieves a list of events that belong to a specific code language - working returns and array
+async function getEventsByCodeLanguage(codeLanguage) {
+
+  try {
+
+    const [events] = await db.execute(`
+      SELECT *
+      FROM events
+      WHERE primary_language = "${codeLanguage}" OR secondary_language = "${codeLanguage}";`
+    );
+
+    console.log("Events by Code Language,", codeLanguage, "->", events);
+
+  } catch (error) {
+    console.error("Error getting event by code language", codeLanguage);
+    throw error;
+  }
+
+}
+
+// * Retrieves a list of events that match both primary and secondary code languages - working returns and array
+async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
+
+  try {
+
+    const [events] = await db.execute(`
+      SELECT *
+      FROM events
+      WHERE primary_language = "${codeLanguageOne}" AND secondary_language = "${codeLanguageTwo}"
+      OR primary_language = "${codeLanguageTwo}" AND secondary_language = "${codeLanguageOne}";`
+    );
+
+    console.log("Events by Code Languages,", codeLanguageOne, "&", codeLanguageTwo, "->", events);
+
+  } catch (error) {
+    console.error("Error getting event by code languages", codeLanguageOne, "&", codeLanguageTwo);
+    throw error;
+  }
+
+}
 
 // ! updates an existing event
 
@@ -51,4 +158,10 @@ async function createEvent(event) {
 
 module.exports = {
  createEvent,
+ getAllEvents,
+ getAllFutureEvents,
+ getEventById,
+ getEventsByBuddy,
+ getEventsByCodeLanguage,
+ getEventsByBothCodeLanguages,
 };
