@@ -42,6 +42,8 @@ usersRouter.post('/register', (req, res) => {
 usersRouter.post('/login', function (req, res) {
   const { username, password } = req.body;
 
+  console.log('Login request received for username:', username); // Added log
+
   if (!username) {
     return res.status(400).send('Username is required');
   }
@@ -59,12 +61,15 @@ usersRouter.post('/login', function (req, res) {
       bcrypt.compare(password, user.password, function(err, result) {
         if(result) {
           const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
+          console.log('Login successful, token:', token); // Added log
           res.json({ token });
         } else {
+          console.log('Login failed: Invalid credentials'); // Added log
           res.status(401).send('Invalid credentials');
         }
       });
     } else {
+      console.log('Login failed: No user found'); // Added log
       res.status(401).send('Invalid credentials');
     }
   });
