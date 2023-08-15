@@ -12,13 +12,14 @@ async function createEvent(event) {
     `, [buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link],
     );
 
-    const [data] = await db.execute(`
+    const [newEvent] = await db.execute(`
       SELECT * 
       FROM events
       WHERE buddy_one='${buddy_one}';`,
     );
 
-    console.log("Added Event Details ->", data); 
+    console.log("Added Event Details ->", newEvent); 
+    return newEvent;
 
   } catch (error) {
     console.error("error adding event");
@@ -37,6 +38,7 @@ async function getAllEvents() {
     );
 
     console.log("All Events ->", events);
+    return events;
 
   } catch (error) {
     console.error("Error getting all Events");
@@ -59,6 +61,7 @@ async function getAllFutureEvents() {
     );
 
     console.log("Upcoming Events ->", events);
+    return events;
 
   } catch (error) {
     console.error("Error getting upcoming events");
@@ -79,6 +82,7 @@ async function getEventById(id) {
     );
 
     console.log("Event by Id", id, "->", event);
+    return event;
 
   } catch (error) {
     console.error("Error getting event by Id", id);
@@ -99,6 +103,7 @@ async function getEventsByBuddy(buddyName) {
     );
 
     console.log("Events by Buddy,", buddyName, "->", events);
+    return events;
 
   } catch (error) {
     console.error("Error getting event by Buddy", buddyName);
@@ -119,6 +124,7 @@ async function getEventsByCodeLanguage(codeLanguage) {
     );
 
     console.log("Events by Code Language,", codeLanguage, "->", events);
+    return events;
 
   } catch (error) {
     console.error("Error getting event by code language", codeLanguage);
@@ -140,6 +146,7 @@ async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
     );
 
     console.log("Events by Code Languages,", codeLanguageOne, "&", codeLanguageTwo, "->", events);
+    return events
 
   } catch (error) {
     console.error("Error getting event by code languages", codeLanguageOne, "&", codeLanguageTwo);
