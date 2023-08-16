@@ -93,10 +93,42 @@ async function getUserbyUserNameOrEmail(username, email){
   }
 }
 
+async function promoteUserToBuddy(userId) {
+  try {
+    const [results, rows, fields] = await db.execute(`
+      UPDATE users
+      SET is_buddy = TRUE 
+      WHERE id = "${userId}"
+    `);
+    console.log(results)
+
+    if (results.changedRows >= 1) {
+      const [updatedUser] = await db.execute(`
+        SELECT * 
+        FROM users 
+        WHERE id = "${userId}"; 
+      `);
+      console.log("Promoted User with userId:", userId, "->", updatedUser)
+      return updatedUser;
+
+    } 
+    else {
+      console.log("Error promoting user")
+      return ("Error promoting user found")
+    }
+
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 getAllUsers()
+promoteUserToBuddy(8)
 
  module.exports = {
   createUser,
   getUserbyUserNameOrEmail,
   getUserbyUserName,
+  promoteUserToBuddy,
  };

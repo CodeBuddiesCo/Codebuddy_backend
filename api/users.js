@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUser, requireAdmin } = require('./utils');
-const { getUserbyUserNameOrEmail, createUser, getUserbyUserName } = require('../db/users');
+const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy } = require('../db/users');
 
 
 const usersRouter = express.Router();
@@ -47,8 +47,8 @@ usersRouter.post('/register', async (req, res) => {
     });
     
   } catch (error) {
-      console.error(error);
-      return res.status(500).send('Error while registering user');
+    console.error(error);
+    return res.status(500).send('Error while registering user');
   }
 });
 
@@ -72,50 +72,55 @@ usersRouter.post('/login', async function (req, res) {
   const [user] = await getUserbyUserName(username);
   console.log("User ->", user)
 
-    if (user.username) {
-      console.log('User found:', user.username);
+  if (user.username) {
+    console.log('User found:', user.username);
 
-      bcrypt.compare(password, user.password, function(err, result) {
-        if (err) {
-          console.log('bcrypt compare error:', err);
-          return res.status(500).send('Internal Server Error');
-        }
-        delete user.password
-        if (result) {
-          const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
-          console.log('Login successful, token:', token);
-          res.send({
-            message: "Login successful",
-            token,
-            user: user,
-          });
-        } else {
-          console.log('Login failed: Invalid credentials');
-          return res.status(401).send('Invalid credentials');
-        }
-      });
+    bcrypt.compare(password, user.password, function(err, result) {
+      if (err) {
+        console.log('bcrypt compare error:', err);
+        return res.status(500).send('Internal Server Error');
+      }
+      delete user.password
+      if (result) {
+        const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET);
+        console.log('Login successful, token:', token);
+        res.send({
+          message: "Login successful",
+          token,
+          user: user,
+        });
+      } else {
+        console.log('Login failed: Invalid credentials');
+        return res.status(401).send('Invalid credentials');
+      }
+    });
       
-    } else {
-      console.log('Login failed: No user found');
-      return res.status(401).send('Invalid credentials');
-    }
+  } else {
+    console.log('Login failed: No user found');
+    return res.status(401).send('Invalid credentials');
+  }
   
 } catch (error) {
-  console.log('Database query error:', error);
-  return res.status(500).send('Internal Server Error');
+  console.error(error);
+  return res.status(500).send('Error while logging in user');
 }
 });
 
 
-usersRouter.put('/promote/:id', requireUser, requireAdmin, (req, res) => {
+usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   const userId = req.params.id;
-  const sql = 'UPDATE users SET is_buddy = TRUE WHERE id = ?';
-  db.query(sql, [userId], (err, results) => {
-    if (err) {
-      throw err;
+
+  try {
+    const promotedUser = await promoteUserToBuddy(userId);
+  
+    if (promotedUser.is_buddy) {
+    res.send('User successfully promoted to buddy');
     }
-    res.send('User promoted to buddy');
-  });
+
+  }catch (error) {
+    console.error(error);
+    return res.status(400).send('Error while promoting user');
+  }
 });
 
 module.exports = usersRouter;
