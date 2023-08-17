@@ -121,42 +121,27 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   }
 });
 
-usersRouter.post('/send-message', validateToken, requireUser, async (req, res) => {
-  const { recipientUsername, message } = req.body;
-  const senderId = req.user.id;
-  console.log('Sender ID:', senderId); // Log sender ID
-
+usersRouter.post('/send-message', validateToken, async (req, res) => {
   try {
-    
-    const [recipient] = await getUserbyUserName(recipientUsername);
+    const { receiverId, content } = req.body;
+    const senderId = req.user.id; // Assuming you have the authenticated user's ID in req.user
 
-    if (!recipient) {
-      return res.status(404).send('Recipient not found');
-    }
-
-    const messageId = await saveMessage(senderId, recipient.id, message);
-    console.log('Saving message from Sender ID:', senderId, 'to Recipient ID:', recipientId); // Log details
-
-    if (messageId) {
-      return res.send('Message sent and saved successfully');
-    } else {
-      return res.status(500).send('Error while saving message');
-    }
+    await saveMessage(senderId, receiverId, content);
+    res.json({ message: 'Message sent successfully' });
   } catch (error) {
-    console.error(error);
-    return res.status(500).send('Error while sending message');
+    console.error('Error sending message:', error);
+    res.status(500).json({ error: 'An error occurred while sending the message' });
   }
 });
 
-usersRouter.get('/received-messages', validateToken, requireUser, async (req, res) => {
-  console.log('Received messages for user:', req.user);
+usersRouter.get('/received-messages', validateToken, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const messages = await getReceivedMessages(userId, req.user.isAdmin);
-    res.json(messages);
+    const userId = req.user.id; // Assuming you have the authenticated user's ID in req.user
+    const receivedMessages = await getReceivedMessages(userId);
+    res.json(receivedMessages);
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error while fetching messages');
+    console.error('Error getting received messages:', error);
+    res.status(500).json({ error: 'An error occurred while retrieving received messages' });
   }
 });
 

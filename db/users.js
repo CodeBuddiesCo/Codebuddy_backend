@@ -143,50 +143,37 @@ async function promoteUserToBuddy(userId) {
     }
 }
 
-async function saveMessage(senderUsername, recipientUsername, message) {
+async function saveMessage(senderId, receiverId, content) {
     try {
-        // Check if senderUsername and recipientUsername exist in the users table
-        const [sender] = await db.query('SELECT username FROM users WHERE username = ?', [senderUsername]);
-        const [recipient] = await db.query('SELECT username FROM users WHERE username = ?', [recipientUsername]);
-        if (!sender || !recipient) {
-            console.error('Sender username or Recipient username not found in users table.');
-            return;
-        }
-
-        const timestamp = new Date();
-        const query = `
-        INSERT INTO messages (sender_username, recipient_username, message_content, timestamp)
-        VALUES (?, ?, ?, ?)
-      `;
-        const values = [senderUsername, recipientUsername, message, timestamp];
-
-        const [result] = await db.execute(query, values);
-        return result.insertId;
+      const [results] = await db.execute(`
+        INSERT INTO messages (sender_id, receiver_id, content)
+        VALUES (?, ?, ?);
+      `, [senderId, receiverId, content]);
+  
+      console.log("Message saved:", results);
+      return results;
     } catch (error) {
-        console.error('Error saving message:', error);
-        throw error;
+      console.error("Error saving message:", error);
+      throw error;
     }
-}
-
-async function getReceivedMessages(username, isAdmin) {
-    console.log('Fetching messages for username:', username, 'Is Admin:', isAdmin);
+  }
+  
+  async function getReceivedMessages(userId) {
     try {
-        let query;
-        if (isAdmin) {
-            query = 'SELECT * FROM messages';
-        } else {
-            query = 'SELECT * FROM messages WHERE recipient_username = ?';
-        }
-
-        const values = isAdmin ? [] : [username];
-        const [result] = await db.execute(query, values);
-        console.log('Result:', result);
-        return result;
+      const [receivedMessages] = await db.execute(`
+        SELECT m.id, m.sender_id, u.username AS sender_username, m.content, m.timestamp
+        FROM messages AS m
+        JOIN users AS u ON m.sender_id = u.id
+        WHERE m.receiver_id = ?;
+      `, [userId]);
+  
+      console.log("Received messages for user", userId, "->", receivedMessages);
+      return receivedMessages;
     } catch (error) {
-        console.error('Error fetching messages:', error);
-        throw error;
+      console.error("Error getting received messages:", error);
+      throw error;
     }
-}
+  }  
 
 module.exports = {
     getAllUsers,
