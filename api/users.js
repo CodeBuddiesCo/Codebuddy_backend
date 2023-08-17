@@ -5,7 +5,6 @@ const db = require('../db/db');
 const { requireUser, requireAdmin } = require('./utils');
 const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy } = require('../db/users');
 
-
 const usersRouter = express.Router();
 
 usersRouter.post('/register', async (req, res) => {
@@ -122,7 +121,7 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   }
 });
 
-usersRouter.post('/send-message', authenticateToken, async (req, res) => {
+usersRouter.post('/send-message', requireUser, async (req, res) => {
   const { userId, message } = req.body;
   const senderId = req.user.id;
 
@@ -136,7 +135,7 @@ usersRouter.post('/send-message', authenticateToken, async (req, res) => {
   }
 });
 
-usersRouter.get('/messages', authenticateToken, async (req, res) => {
+usersRouter.get('/messages', requireUser, async (req, res) => {
   const userId = req.user.id;
 
   try {
