@@ -152,7 +152,7 @@ async function saveMessage(senderId, recipientId, message) {
       `;
         const values = [senderId, recipientId, message, timestamp];
 
-        const [result] = await db.execute(query, values); // Use db.execute instead of pool.query
+        const [result] = await db.execute(query, values); 
         return result.insertId;
     } catch (error) {
         console.error('Error saving message:', error);
@@ -161,6 +161,7 @@ async function saveMessage(senderId, recipientId, message) {
 }
 
 async function getReceivedMessages(userId, isAdmin) {
+    console.log('Fetching messages for user ID:', userId, 'Is Admin:', isAdmin);
     try {
         let query;
         if (isAdmin) {
@@ -170,7 +171,7 @@ async function getReceivedMessages(userId, isAdmin) {
         }
 
         const values = isAdmin ? [] : [userId];
-        const [result] = await db.execute(query, values); // Use db.execute instead of pool.query
+        const [result] = await db.execute(query, values);
         return result;
     } catch (error) {
         console.error('Error fetching messages:', error);

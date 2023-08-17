@@ -2,8 +2,7 @@ const jwt = require('jsonwebtoken');
 
 function requireUser(req, res, next) {
   if (!req.user) {
-    res.status(401);
-    next({
+    return res.status(401).json({
       error: "You must be logged in to perform this action",
       message: "You must be logged in to perform this action",
       name: "User token not received",
@@ -36,6 +35,7 @@ function validateToken(req, res, next) {
     }
 
     req.user = user;
+    console.log('User from token:', user); // Log the user info
     next();
   });
 }

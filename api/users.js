@@ -146,6 +146,7 @@ usersRouter.post('/send-message', validateToken, requireUser, async (req, res) =
 });
 
 usersRouter.get('/received-messages', validateToken, requireUser, async (req, res) => {
+  console.log('Received messages for user:', req.user);
   try {
     const userId = req.user.id;
     const messages = await getReceivedMessages(userId, req.user.isAdmin);
