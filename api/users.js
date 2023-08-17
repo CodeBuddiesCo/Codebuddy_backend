@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUser, requireAdmin, validateToken } = require('./utils');
-const { getUserbyUserNameOrEmail, getAllUsers, createUser, getUserbyUserName, promoteUserToBuddy, saveMessage, getReceivedMessages } = require('../db/users');
+const { getUserbyUserNameOrEmail, getAllUsers, createUser, getUserbyUserName, promoteUserToBuddy } = require('../db/users');
 
 const usersRouter = express.Router();
 

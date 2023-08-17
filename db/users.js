@@ -143,41 +143,6 @@ async function promoteUserToBuddy(userId) {
     }
 }
 
-async function saveMessage(senderId, receiverId, content) {
-    try {
-      const [results] = await db.execute(
-        `
-        INSERT INTO messages (sender_id, receiver_id, content, timestamp)
-        VALUES (?, ?, ?, NOW());
-        `,
-        [senderId, receiverId, content]
-      );
-  
-      console.log('Message saved:', results);
-      return results;
-    } catch (error) {
-      console.error('Error saving message:', error);
-      throw error;
-    }
-  }  
-  
-  async function getReceivedMessages(userId) {
-    try {
-      const [receivedMessages] = await db.execute(`
-        SELECT m.id, m.sender_id, u.username AS sender_username, m.content, m.timestamp
-        FROM messages AS m
-        JOIN users AS u ON m.sender_id = u.id
-        WHERE m.receiver_id = ?;
-      `, [userId]);
-  
-      console.log("Received messages for user", userId, "->", receivedMessages);
-      return receivedMessages;
-    } catch (error) {
-      console.error("Error getting received messages:", error);
-      throw error;
-    }
-  }  
-
 module.exports = {
     getAllUsers,
     createUser,
@@ -185,6 +150,4 @@ module.exports = {
     getUserbyUserName,
     promoteUserToBuddy,
     getUserById,
-    saveMessage,
-    getReceivedMessages
 };
