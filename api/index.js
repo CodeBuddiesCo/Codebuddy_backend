@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { getUserById } = require('../db');
+const { getUserById } = require('../db/users');
+
 const { JWT_SECRET } = process.env;
 
 // GET /api/code - Passing test
@@ -23,7 +24,7 @@ router.use(async (req, res, next) => {
       const { id } = jwt.verify(token, JWT_SECRET);
 
       if (id) {
-        req.user = await getUserById(id);
+        req.user = await getUserById(id)
         next();
       }
     } catch ({ name, message }) {
