@@ -46,6 +46,26 @@ async function getAllUsers(){
   }
 }
 
+async function getUserById(id) {
+
+  try {
+
+    const [user] = await db.execute(`
+      SELECT *
+      FROM users
+      WHERE id = "${id}";`
+    );
+
+    console.log("User by Id", id, "->", user);
+    return user;
+
+  } catch (error) {
+    console.error("Error getting user by Id", id);
+    throw error;
+  }
+
+}
+
 async function getUserbyUserName(username){
   try {
     const [userByUserName] = await db.execute(`
@@ -131,4 +151,5 @@ promoteUserToBuddy(8)
   getUserbyUserNameOrEmail,
   getUserbyUserName,
   promoteUserToBuddy,
+  getUserById,
  };
