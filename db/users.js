@@ -145,18 +145,21 @@ async function promoteUserToBuddy(userId) {
 
 async function saveMessage(senderId, receiverId, content) {
     try {
-      const [results] = await db.execute(`
-        INSERT INTO messages (sender_id, receiver_id, content)
-        VALUES (?, ?, ?);
-      `, [senderId, receiverId, content]);
+      const [results] = await db.execute(
+        `
+        INSERT INTO messages (sender_id, receiver_id, content, timestamp)
+        VALUES (?, ?, ?, NOW());
+        `,
+        [senderId, receiverId, content]
+      );
   
-      console.log("Message saved:", results);
+      console.log('Message saved:', results);
       return results;
     } catch (error) {
-      console.error("Error saving message:", error);
+      console.error('Error saving message:', error);
       throw error;
     }
-  }
+  }  
   
   async function getReceivedMessages(userId) {
     try {
