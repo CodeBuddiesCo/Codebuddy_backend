@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUser, requireAdmin } = require('./utils');
-const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy, saveMessage } = require('../db/users');
+const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy, saveMessage, getReceivedMessages } = require('../db/users');
 
 const usersRouter = express.Router();
 
@@ -142,6 +142,17 @@ usersRouter.post('/send-message', requireUser, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).send('Error while sending message');
+  }
+});
+
+usersRouter.get('/received-messages', requireUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const messages = await getReceivedMessages(userId, req.user.isAdmin);
+    res.json(messages);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error while fetching messages');
   }
 });
 
