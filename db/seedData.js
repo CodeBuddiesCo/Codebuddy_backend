@@ -2,7 +2,7 @@ const db = require('./db');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const {createEvent} = require('./events');
+const { createEvent } = require('./events');
 
 const dropTables = async () => {
   try {
@@ -14,7 +14,7 @@ const dropTables = async () => {
       DROP TABLE IF EXISTS schedule_events;
     `);
     await db.query(`
-      DROP TABLE IF EXISTS schedules;
+      DROP TABLE IF EXISTS schedule;
     `);
     await db.query(`
       DROP TABLE IF EXISTS events;
@@ -22,16 +22,19 @@ const dropTables = async () => {
     await db.query(`
       DROP TABLE IF EXISTS users;
     `);
+    await db.query(`
+    DROP TABLE IF EXISTS messages;
+  `);
 
     console.log("Finished dropping tables!")
-  } catch(error) {
+  } catch (error) {
     console.error("Error dropping tables!")
     throw error;
   }
 }
 
 const createTables = async () => {
-  try{
+  try {
 
     await db.query(`
       CREATE TABLE users (
@@ -63,7 +66,7 @@ const createTables = async () => {
     `)
 
     await db.query(`  
-      CREATE TABLE schedules (
+      CREATE TABLE schedule (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INTEGER REFERENCES users(id)
       );
@@ -72,24 +75,25 @@ const createTables = async () => {
     await db.query(`  
       CREATE TABLE schedule_events (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        schedule_id INTEGER REFERENCES schedules(id),
+        user_id INTEGER REFERENCES users(id),
         event_id INTEGER REFERENCES events(id)
       );
     `);
-    await db.query(`  
+
+    await db.query(`
     CREATE TABLE messages (
-      id INT PRIMARY KEY AUTO_INCREMENT,
-      sender_username VARCHAR(50) NOT NULL,
-      recipient_username VARCHAR(50) NOT NULL,
-      message_content TEXT NOT NULL,
-      timestamp DATETIME NOT NULL,
-      FOREIGN KEY (sender_username) REFERENCES users(username),
-      FOREIGN KEY (recipient_username) REFERENCES users(username)
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      sender_id INT NOT NULL,
+      receiver_id INT NOT NULL,
+      content TEXT NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sender_id) REFERENCES users(id),
+      FOREIGN KEY (receiver_id) REFERENCES users(id)
     );
-`);
-      
-    console.log("created Tables");  
-  } catch(error){
+  `);
+
+    console.log("created Tables");
+  } catch (error) {
     console.error("error creating tables")
     throw error;
   }
@@ -97,10 +101,10 @@ const createTables = async () => {
 
 async function createUser(user) {
   try {
-    
-    const {name, email, username, password, is_buddy, isAdmin} = user
+
+    const { name, email, username, password, is_buddy, isAdmin } = user
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const [results,rows,fields] = await db.execute(`
+    const [results, rows, fields] = await db.execute(`
       INSERT INTO users (name, email, username, password, is_buddy, isAdmin) 
       VALUES (?, ?, ?, ?, ?, ?);
     `, [name, email, username, hashedPassword, is_buddy, isAdmin],
@@ -113,7 +117,7 @@ async function createUser(user) {
     );
 
     delete data[0].password
-    console.log("Added User Details ->:", data); 
+    console.log("Added User Details ->:", data);
 
   } catch (error) {
     console.error("error adding users");
@@ -129,7 +133,7 @@ async function seedUserData() {
       email: 'hollyekedge@gmail.com',
       username: 'Hollye',
       password: 'ccc123',
-      is_buddy: true, 
+      is_buddy: true,
       isAdmin: true
     },
     {
@@ -173,11 +177,11 @@ async function seedEventData() {
 
 }
 
-async function seedData(){
-await dropTables()
-await createTables()
-await seedUserData()
-await seedEventData()
+async function seedData() {
+  await dropTables()
+  await createTables()
+  await seedUserData()
+  await seedEventData()
 }
 
 seedData()
