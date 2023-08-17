@@ -145,6 +145,14 @@ async function promoteUserToBuddy(userId) {
 
 async function saveMessage(senderId, recipientId, message) {
     try {
+        // Check if senderId and recipientId exist in the users table
+        const [sender] = await db.query('SELECT id FROM users WHERE id = ?', [senderId]);
+        const [recipient] = await db.query('SELECT id FROM users WHERE id = ?', [recipientId]);
+        if (!sender || !recipient) {
+            console.error('Sender ID or Recipient ID not found in users table.');
+            return;
+        }
+
         const timestamp = new Date();
         const query = `
         INSERT INTO messages (sender_id, recipient_id, message_content, timestamp)

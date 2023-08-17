@@ -127,6 +127,7 @@ usersRouter.post('/send-message', validateToken, requireUser, async (req, res) =
   console.log('Sender ID:', senderId); // Log sender ID
 
   try {
+    
     const [recipient] = await getUserbyUserName(recipientUsername);
 
     if (!recipient) {
