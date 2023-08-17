@@ -160,6 +160,24 @@ async function saveMessage(senderId, recipientId, message) {
     }
 }
 
+async function getReceivedMessages(userId, isAdmin) {
+    try {
+      let query;
+      if (isAdmin) {
+        query = 'SELECT * FROM messages';
+      } else {
+        query = 'SELECT * FROM messages WHERE recipient_id = ?';
+      }
+  
+      const values = isAdmin ? [] : [userId];
+      const [result] = await pool.query(query, values);
+      return result;
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      throw error;
+    }
+  }
+
 module.exports = {
     createUser,
     getUserbyUserNameOrEmail,
@@ -167,4 +185,5 @@ module.exports = {
     promoteUserToBuddy,
     getUserById,
     saveMessage,
+    getReceivedMessages
 };
