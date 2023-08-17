@@ -143,22 +143,22 @@ async function promoteUserToBuddy(userId) {
     }
 }
 
-async function saveMessage(senderId, recipientId, message) {
+async function saveMessage(senderUsername, recipientUsername, message) {
     try {
-        // Check if senderId and recipientId exist in the users table
-        const [sender] = await db.query('SELECT id FROM users WHERE id = ?', [senderId]);
-        const [recipient] = await db.query('SELECT id FROM users WHERE id = ?', [recipientId]);
+        // Check if senderUsername and recipientUsername exist in the users table
+        const [sender] = await db.query('SELECT username FROM users WHERE username = ?', [senderUsername]);
+        const [recipient] = await db.query('SELECT username FROM users WHERE username = ?', [recipientUsername]);
         if (!sender || !recipient) {
-            console.error('Sender ID or Recipient ID not found in users table.');
+            console.error('Sender username or Recipient username not found in users table.');
             return;
         }
 
         const timestamp = new Date();
         const query = `
-        INSERT INTO messages (sender_id, recipient_id, message_content, timestamp)
+        INSERT INTO messages (sender_username, recipient_username, message_content, timestamp)
         VALUES (?, ?, ?, ?)
       `;
-        const values = [senderId, recipientId, message, timestamp];
+        const values = [senderUsername, recipientUsername, message, timestamp];
 
         const [result] = await db.execute(query, values);
         return result.insertId;
@@ -168,17 +168,17 @@ async function saveMessage(senderId, recipientId, message) {
     }
 }
 
-async function getReceivedMessages(userId, isAdmin) {
-    console.log('Fetching messages for user ID:', userId, 'Is Admin:', isAdmin);
+async function getReceivedMessages(username, isAdmin) {
+    console.log('Fetching messages for username:', username, 'Is Admin:', isAdmin);
     try {
         let query;
         if (isAdmin) {
             query = 'SELECT * FROM messages';
         } else {
-            query = 'SELECT * FROM messages WHERE recipient_id = ?';
+            query = 'SELECT * FROM messages WHERE recipient_username = ?';
         }
 
-        const values = isAdmin ? [] : [userId];
+        const values = isAdmin ? [] : [username];
         const [result] = await db.execute(query, values);
         console.log('Result:', result);
         return result;

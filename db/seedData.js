@@ -79,14 +79,14 @@ const createTables = async () => {
     await db.query(`  
     CREATE TABLE messages (
       id INT PRIMARY KEY AUTO_INCREMENT,
-      sender_id INT NOT NULL,
-      recipient_id INT NOT NULL,
+      sender_username VARCHAR(50) NOT NULL,
+      recipient_username VARCHAR(50) NOT NULL,
       message_content TEXT NOT NULL,
       timestamp DATETIME NOT NULL,
-      FOREIGN KEY (sender_id) REFERENCES users(id),
-      FOREIGN KEY (recipient_id) REFERENCES users(id)
+      FOREIGN KEY (sender_username) REFERENCES users(username),
+      FOREIGN KEY (recipient_username) REFERENCES users(username)
     );
-    `);
+`);
       
     console.log("created Tables");  
   } catch(error){
