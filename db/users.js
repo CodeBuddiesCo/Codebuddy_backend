@@ -28,24 +28,6 @@ async function createUser(user) {
     }
 }
 
-async function getAllUsers() {
-    try {
-        const [allUsers] = await db.execute(`
-      SELECT * 
-      FROM users; 
-    `);
-
-        allUsers.map((user) => delete user.password)
-
-        console.log("Results from getAllUsers function ->", allUsers)
-        return allUsers
-
-    } catch (error) {
-        console.error("error getting all users");
-        throw error;
-    }
-}
-
 async function getUserById(id) {
 
     try {
