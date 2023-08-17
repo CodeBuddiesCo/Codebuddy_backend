@@ -189,6 +189,7 @@ async function getReceivedMessages(userId, isAdmin) {
 }
 
 module.exports = {
+    getAllUsers,
     createUser,
     getUserbyUserNameOrEmail,
     getUserbyUserName,
