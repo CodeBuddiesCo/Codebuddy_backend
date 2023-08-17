@@ -124,6 +124,7 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
 usersRouter.post('/send-message', validateToken, requireUser, async (req, res) => {
   const { recipientUsername, message } = req.body;
   const senderId = req.user.id;
+  console.log('Sender ID:', senderId); // Log sender ID
 
   try {
     const [recipient] = await getUserbyUserName(recipientUsername);
@@ -133,6 +134,7 @@ usersRouter.post('/send-message', validateToken, requireUser, async (req, res) =
     }
 
     const messageId = await saveMessage(senderId, recipient.id, message);
+    console.log('Saving message from Sender ID:', senderId, 'to Recipient ID:', recipientId); // Log details
 
     if (messageId) {
       return res.send('Message sent and saved successfully');
