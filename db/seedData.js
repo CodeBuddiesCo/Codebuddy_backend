@@ -73,6 +73,17 @@ const createTables = async () => {
         event_id INTEGER REFERENCES events(id)
       );
     `);
+    await db.query(`  
+    CREATE TABLE messages (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      sender_id INT NOT NULL,
+      recipient_id INT NOT NULL,
+      message_content TEXT NOT NULL,
+      timestamp DATETIME NOT NULL,
+      FOREIGN KEY (sender_id) REFERENCES users(id),
+      FOREIGN KEY (recipient_id) REFERENCES users(id)
+    );
+    `);
       
     console.log("created Tables");  
   } catch(error){
