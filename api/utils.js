@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 function requireUser(req, res, next) {
   if (!req.user) {
     res.status(401);
@@ -20,8 +22,27 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+function validateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer token
+
+  if (!token) {
+    return res.status(401).send('Token not provided');
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).send('Invalid token');
+    }
+
+    req.user = user;
+    next();
+  });
+}
+
 module.exports = {
   requireUser,
-  requireAdmin
+  requireAdmin,
+  validateToken
 }
 

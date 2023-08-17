@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
-const { requireUser, requireAdmin } = require('./utils');
+const { requireUser, requireAdmin, validateToken } = require('./utils');
 const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy, saveMessage, getReceivedMessages } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -121,7 +121,7 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   }
 });
 
-usersRouter.post('/send-message', requireUser, async (req, res) => {
+usersRouter.post('/send-message', validateToken, requireUser, async (req, res) => {
   const { recipientUsername, message } = req.body;
   const senderId = req.user.id;
 
@@ -145,7 +145,7 @@ usersRouter.post('/send-message', requireUser, async (req, res) => {
   }
 });
 
-usersRouter.get('/received-messages', requireUser, async (req, res) => {
+usersRouter.get('/received-messages', validateToken, requireUser, async (req, res) => {
   try {
     const userId = req.user.id;
     const messages = await getReceivedMessages(userId, req.user.isAdmin);
