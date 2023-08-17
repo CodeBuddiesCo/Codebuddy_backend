@@ -7,7 +7,9 @@ const {createEvent} = require('./events');
 const dropTables = async () => {
   try {
     console.log("connected");
-
+    await db.query(`
+    DROP TABLE IF EXISTS messages;
+    `);
     await db.query(`
       DROP TABLE IF EXISTS schedule_events;
     `);
