@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUser, requireAdmin } = require('./utils');
-const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy } = require('../db/users');
+const { getUserbyUserNameOrEmail, createUser, getUserbyUserName, promoteUserToBuddy, saveMessage } = require('../db/users');
 
 const usersRouter = express.Router();
 
@@ -122,29 +122,26 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
 });
 
 usersRouter.post('/send-message', requireUser, async (req, res) => {
-  const { userId, message } = req.body;
+  const { recipientUsername, message } = req.body;
   const senderId = req.user.id;
 
   try {
-    const savedMessage = await db.saveMessage(senderId, userId, message);
+    const [recipient] = await getUserbyUserName(recipientUsername);
 
-    return res.status(200).json({ message: 'Message sent successfully', savedMessage });
+    if (!recipient) {
+      return res.status(404).send('Recipient not found');
+    }
+
+    const messageId = await saveMessage(senderId, recipient.id, message);
+
+    if (messageId) {
+      return res.send('Message sent and saved successfully');
+    } else {
+      return res.status(500).send('Error while saving message');
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).send('Error while sending message');
-  }
-});
-
-usersRouter.get('/messages', requireUser, async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const userMessages = await db.getUserMessages(userId);
-
-    return res.status(200).json(userMessages);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).send('Error while retrieving messages');
   }
 });
 
