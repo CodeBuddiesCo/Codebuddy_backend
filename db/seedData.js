@@ -42,7 +42,8 @@ const createTables = async () => {
         password VARCHAR(100) NOT NULL,
         pfp_url VARCHAR(255),
         primary_language VARCHAR(50),
-        secondary_language VARCHAR(50)
+        secondary_language VARCHAR(50),
+        buddy_bio VARCHAR(2500)
       );
     `);
 
@@ -57,7 +58,7 @@ const createTables = async () => {
         spots_available INT NOT NULL,
         meeting_link VARCHAR(255) NOT NULL
       );
-    `);
+    `)
 
     await db.query(`  
       CREATE TABLE schedule (
