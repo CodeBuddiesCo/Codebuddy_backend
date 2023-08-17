@@ -106,7 +106,6 @@ usersRouter.post('/login', async function (req, res) {
 }
 });
 
-
 usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   const userId = req.params.id;
 
@@ -120,6 +119,33 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   }catch (error) {
     console.error(error);
     return res.status(400).send('Error while promoting user');
+  }
+});
+
+usersRouter.post('/send-message', authenticateToken, async (req, res) => {
+  const { userId, message } = req.body;
+  const senderId = req.user.id;
+
+  try {
+    const savedMessage = await db.saveMessage(senderId, userId, message);
+
+    return res.status(200).json({ message: 'Message sent successfully', savedMessage });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send('Error while sending message');
+  }
+});
+
+usersRouter.get('/messages', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const userMessages = await db.getUserMessages(userId);
+
+    return res.status(200).json(userMessages);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send('Error while retrieving messages');
   }
 });
 
