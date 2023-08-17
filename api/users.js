@@ -121,12 +121,15 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   }
 });
 
-usersRouter.post('/send-message', validateToken, async (req, res) => {
-  try {
-    const { receiverId, content } = req.body;
-    const senderId = req.user.id; // Assuming you have the authenticated user's ID in req.user
+usersRouter.post('/send', async (req, res) => {
+  const { senderId, receiverId, messageContent } = req.body;
 
-    await saveMessage(senderId, receiverId, content);
+  try {
+    const result = await db.query(
+      'INSERT INTO messages (sender_id, receiver_id, message_content) VALUES (?, ?, ?)',
+      [senderId, receiverId, messageContent]
+    );
+
     res.json({ message: 'Message sent successfully' });
   } catch (error) {
     console.error('Error sending message:', error);
@@ -134,14 +137,19 @@ usersRouter.post('/send-message', validateToken, async (req, res) => {
   }
 });
 
-usersRouter.get('/received-messages', validateToken, async (req, res) => {
+usersRouter.get('/inbox/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
   try {
-    const userId = req.user.id; // Assuming you have the authenticated user's ID in req.user
-    const receivedMessages = await getReceivedMessages(userId);
-    res.json(receivedMessages);
+    const messages = await db.query(
+      'SELECT * FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC',
+      [userId]
+    );
+
+    res.json(messages);
   } catch (error) {
-    console.error('Error getting received messages:', error);
-    res.status(500).json({ error: 'An error occurred while retrieving received messages' });
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'An error occurred while fetching messages' });
   }
 });
 
