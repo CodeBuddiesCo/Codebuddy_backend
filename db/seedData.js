@@ -14,7 +14,7 @@ const dropTables = async () => {
       DROP TABLE IF EXISTS schedule_events;
     `);
     await db.query(`
-      DROP TABLE IF EXISTS schedule;
+      DROP TABLE IF EXISTS schedules;
     `);
     await db.query(`
       DROP TABLE IF EXISTS events;
@@ -63,7 +63,7 @@ const createTables = async () => {
     `)
 
     await db.query(`  
-      CREATE TABLE schedule (
+      CREATE TABLE schedules (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INTEGER REFERENCES users(id)
       );
@@ -72,7 +72,7 @@ const createTables = async () => {
     await db.query(`  
       CREATE TABLE schedule_events (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
+        schedule_id INTEGER REFERENCES schedules(id),
         event_id INTEGER REFERENCES events(id)
       );
     `);
