@@ -134,6 +134,7 @@ usersRouter.post('/message', async (req, res) => {
     await createMessage(sender_id, receiver_id, message_content);
     res.status(200).json({ success: true });
   } catch (error) {
+    console.error("Error in POST /api/users/message:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
