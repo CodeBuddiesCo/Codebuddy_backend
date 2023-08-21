@@ -1,31 +1,39 @@
 const db = require("./db")
 const bcrypt = require('bcrypt');
+const { createSchedule } = require("./schedules");
 const saltRounds = 10;
 
 
 async function createUser(user) {
-    try {
-        const { name, email, username, hashedPassword } = user
-        const [results, rows, fields] = await db.execute(`
+  try {
+    const { name, email, username, hashedPassword } = user
+    const [results, rows, fields] = await db.execute(`
       INSERT INTO users (name, email, username, password) 
       VALUES (?, ?, ?, ?);
-    `, [name, email, username, hashedPassword],
-        );
+      `, [name, email, username, hashedPassword],
+    );
 
-        const [newUser] = await db.execute(`
+    const [newUser] = await db.execute(`
       SELECT * 
       FROM users
       WHERE username='${username}';`,
-        );
+    );
 
-        delete newUser[0].password;
-        console.log("Added User Details ->:", newUser);
-        return newUser
+    delete newUser[0].password;
+    console.log("Added User Details ->:", newUser);
 
-    } catch (error) {
-        console.error("error adding users");
-        throw error;
-    }
+    const userId = newUser[0].id;
+
+    if (userId) {
+      await createSchedule(userId);
+    }  
+
+    return newUser;
+
+  } catch (error) {
+    console.error("error adding users");
+    throw error;
+  }
 }
 
 async function getAllUsers() {
