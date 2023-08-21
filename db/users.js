@@ -180,20 +180,21 @@ async function createMessage(sender_id, receiver_id, message_content) {
 
 async function getMessagesForUser(user_id) {
     try {
-        const [messages] = await db.execute(`
-        SELECT * 
-        FROM messages 
-        WHERE receiver_id = ?
-        ORDER BY timestamp ASC;
-      `, [user_id]); 
-
-        console.log("Messages retrieved successfully", messages);
-        return messages;
+      const [messages] = await db.execute(`
+        SELECT m.id, m.sender_id, m.receiver_id, m.message_content, m.timestamp, u.username as sender_username, u.name as sender_name
+        FROM messages m
+        JOIN users u ON m.sender_id = u.id
+        WHERE m.receiver_id = ?
+        ORDER BY m.timestamp ASC;
+      `, [user_id]);
+  
+      console.log("Messages retrieved successfully", messages);
+      return messages;
     } catch (error) {
-        console.error("Error retrieving messages");
-        throw error;
+      console.error("Error retrieving messages");
+      throw error;
     }
-}
+  }  
 
 // async function testMessages() {
 //     await createMessage(2, 3, "Hello");
