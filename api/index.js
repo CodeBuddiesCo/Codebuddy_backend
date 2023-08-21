@@ -42,6 +42,10 @@ router.use(async (req, res, next) => {
 const usersRouter = require('./users');
 router.use('/users', usersRouter);
 
+// ROUTER: /api/events
+const eventsRouter = require('./events');
+router.use('/events', eventsRouter);
+
 router.use('*', (req, res, next) => {
   const err = new Error('Not found');
   err.status = 404;
