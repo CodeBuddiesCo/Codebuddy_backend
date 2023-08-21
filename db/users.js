@@ -165,7 +165,7 @@ async function createMessage(sender_id, receiver_id, message_content) {
 
         console.log("Message sent successfully");
     } catch (error) {
-        console.error("Error sending message test:");
+        console.error("Error sending message:");
         throw error;
     }
 }
