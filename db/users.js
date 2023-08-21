@@ -170,14 +170,14 @@ async function createMessage(sender_id, receiver_id, message_content) {
     }
 }
 
-async function getMessages(user1_id, user2_id) {
+async function getMessagesForUser(user_id) {
     try {
         const [messages] = await db.execute(`
         SELECT * 
         FROM messages 
-        WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+        WHERE receiver_id = ?
         ORDER BY timestamp ASC;
-      `, [user1_id, user2_id, user2_id, user1_id]);
+      `, [user_id]); 
 
         console.log("Messages retrieved successfully", messages);
         return messages;
@@ -193,7 +193,8 @@ async function getMessages(user1_id, user2_id) {
 // }
 
 // testMessages();
-// getAllMessages(``)
+getMessages(``)
+
 module.exports = {
     getAllUsers,
     createUser,
@@ -202,5 +203,5 @@ module.exports = {
     promoteUserToBuddy,
     getUserById,
     createMessage,
-    getMessages
+    getMessagesForUser
 };
