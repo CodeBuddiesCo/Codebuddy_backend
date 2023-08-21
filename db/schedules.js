@@ -28,34 +28,15 @@ async function createSchedule(userId) {
   }
 }
 
-// !! need to edit this to add a map of the results through getScheduleById() 
-async function getAllSchedules() {
-
-  try {
-    const [schedules] = await db.execute(`
-      SELECT *
-      FROM schedules;`
-    );
-
-    console.log("All schedules ->", schedules);
-    return schedules;
-
-  } catch (error) {
-    console.error("Error getting all Schedules");
-    throw error;
-  }
-
-}
-
 // * Helper function that connects the schedule with the user and links the scheduled events
-async function getScheduleById(id) {
+async function attachEventsToScheduleById(scheduleId) {
   try {
     const [userSchedule] = await db.execute(
       `
-        SELECT schedules.*, users.username AS owner_name
+        SELECT schedules.id AS schedule_id, schedules.user_id, users.username AS owner_name
         FROM schedules 
         INNER JOIN users ON schedules.user_id = users.id
-        WHERE schedules.id='${id}';
+        WHERE schedules.id='${scheduleId}';
       `
     );
 
@@ -66,7 +47,7 @@ async function getScheduleById(id) {
           schedule_events.event_id 
           FROM events
           INNER JOIN schedule_events ON schedule_events.event_id = events.id
-          WHERE schedule_events.schedule_id='${id}';
+          WHERE schedule_events.schedule_id='${scheduleId}';
         `
       );
 
@@ -84,33 +65,128 @@ async function getScheduleById(id) {
   }
 }
 
-async function getScheduleByUserId(user_id) {
+// * Working and returning an array of all schedules with connected events 
+async function getAllSchedules() {
+
+  try {
+    const scheduleIdArray = []
+    const allSchedules = []
+
+    const [schedules] = await db.execute(`
+      SELECT *
+      FROM schedules;`
+    );
+
+    schedules.map(schedule => scheduleIdArray.push(schedule.id))
+
+    await Promise.all (scheduleIdArray.map(async(id) => {
+      const schedule = await attachEventsToScheduleById(id);
+      allSchedules.push(schedule)
+    }))
+
+    console.log("All schedules ->", allSchedules);
+    return allSchedules;
+
+  } catch (error) {
+    console.error("Error getting all Schedules");
+    throw error;
+  }
+
+}
+
+// * Working and returns an array with the users Schedule with enrolled Events
+async function getScheduleWithEventsByUserId(userId) {
+  try {
+    const scheduleIdArray = []
+    const allSchedules = []
+
+    const [schedules] = await db.execute(`
+      SELECT *
+      FROM schedules
+      WHERE user_id = "${userId}";`
+    );
+
+    schedules.map(schedule => scheduleIdArray.push(schedule.id))
+
+    await Promise.all (scheduleIdArray.map(async(id) => {
+      const schedule = await attachEventsToScheduleById(id);
+      allSchedules.push(schedule)
+    }))
+
+    console.log("Schedule by User Id", userId, "->", allSchedules);
+    return allSchedules;
+
+  } catch (error) {
+    console.error("Error getting schedule by user id", userId);
+    throw error;
+  }
+}
+
+// * working as a helper function in create event - does not get connected events
+async function getScheduleByUserId(userId) {
   try {
 
     const [scheduleByUserId] = await db.execute(`
       SELECT *
       FROM schedules
-      WHERE user_id = "${user_id}";`
+      WHERE user_id = "${userId}";`
     );
 
-    console.log("Schedule by User Id", user_id, "->", scheduleByUserId);
+    console.log("Schedule by User Id", userId, "->", scheduleByUserId);
     return scheduleByUserId;
 
   } catch (error) {
-    console.error("Error getting event by Id", id);
+    console.error("Error getting schedule by user id", userId);
     throw error;
   }
 }
 
-// createSchedule(1),
-// createSchedule(2),
-getScheduleById(2)
-// getAllSchedules()
+// * returns an array only of all schedule data with matching id - Does not include events attached to schedule
+async function getScheduleById(id) {
+  try {
+
+    const [scheduleById] = await db.execute(`
+      SELECT *
+      FROM schedules
+      WHERE id = "${id}";`
+    );
+
+    console.log("Schedule by Id", id, "->", scheduleById);
+    return scheduleById;
+
+  } catch (error) {
+    console.error("Error getting schedule by id", id);
+    throw error;
+  }
+}
+
+// * working as a helper function in getEventAndAttendees - returns only the name of the schedule owner for a specific schedule Id
+async function getScheduleOwnerByScheduleId(id) {
+  try {
+
+    const [scheduleOwner] = await db.execute(`
+      SELECT users.username
+      FROM schedules
+      INNER JOIN users ON schedules.user_id = users.id
+      WHERE schedules.id = "${id}";`
+    );
+
+    console.log("Schedule id", id, "owner ->", scheduleOwner[0].username);
+    return scheduleOwner[0].username;
+
+  } catch (error) {
+    console.error("Error getting schedule by Id with User", id);
+    throw error;
+  }
+}
 
 module.exports = {
   createSchedule,
+  attachEventsToScheduleById,
   getScheduleById,
   getAllSchedules,
-  getScheduleByUserId
+  getScheduleOwnerByScheduleId,
+  getScheduleByUserId,
+  getScheduleWithEventsByUserId
 
 };

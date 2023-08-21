@@ -7,7 +7,8 @@ async function getEventById(id) {
   try {
 
     const [event] = await db.execute(`
-      SELECT *
+      SELECT events.id AS event_id, events.buddy_one, events.buddy_two, events.primary_language, 
+      events.secondary_language, events.date_time, events.spots_available, events.meeting_link
       FROM events
       WHERE id = "${id}";`
     );
@@ -41,7 +42,7 @@ async function addBuddyEventToBuddySchedule(scheduleId, eventId) {
       `
     );
 
-    console.log("New Schedule Event ->", newScheduleEvent); 
+    console.log("New Schedule Event added to buddy Schedule ->", newScheduleEvent); 
     return newScheduleEvent;
 
   } catch (error) {
@@ -108,12 +109,9 @@ async function addEventToSchedule(scheduleId, eventId) {
 }
 
 
-// addBuddyEventToBuddySchedule(1, 2)
-// addEventToSchedule(2, 1)
-
-
 module.exports = {
   addEventToSchedule,
-  addBuddyEventToBuddySchedule
+  addBuddyEventToBuddySchedule,
+  getEventById
 
 };
