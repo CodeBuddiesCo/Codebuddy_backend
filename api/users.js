@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUser, requireAdmin, validateToken } = require('./utils');
-const { getUserbyUserNameOrEmail, getAllUsers, createUser, getUserbyUserName, promoteUserToBuddy } = require('../db/users');
+const { getUserbyUserNameOrEmail, getAllUsers, createUser, getUserbyUserName, promoteUserToBuddy, getMessages, createMessage } = require('../db/users');
 
 const usersRouter = express.Router();
 
@@ -121,35 +121,24 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
   }
 });
 
-usersRouter.post('/send', async (req, res) => {
-  const { senderId, receiverId, messageContent } = req.body;
-
+router.post('/message', async (req, res) => {
+  const { sender_id, receiver_id, message_content } = req.body;
   try {
-    const result = await db.query(
-      'INSERT INTO messages (sender_id, receiver_id, message_content) VALUES (?, ?, ?)',
-      [senderId, receiverId, messageContent]
-    );
-
-    res.json({ message: 'Message sent successfully' });
+    await createMessage(sender_id, receiver_id, message_content);
+    res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).json({ error: 'An error occurred while sending the message' });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-usersRouter.get('/inbox/:userId', async (req, res) => {
-  const userId = req.params.userId;
 
+router.get('/messages', async (req, res) => {
+  const { user1_id, user2_id } = req.query;
   try {
-    const messages = await db.query(
-      'SELECT * FROM messages WHERE receiver_id = ? ORDER BY timestamp DESC',
-      [userId]
-    );
-
-    res.json(messages);
+    const messages = await getMessages(user1_id, user2_id);
+    res.status(200).json(messages);
   } catch (error) {
-    console.error('Error fetching messages:', error);
-    res.status(500).json({ error: 'An error occurred while fetching messages' });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
