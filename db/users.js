@@ -122,28 +122,25 @@ async function getUserbyUserNameOrEmail(username, email) {
 
 async function promoteUserToBuddy(userId) {
     try {
-        const [results, rows, fields] = await db.execute(`
+        const [results] = await db.execute(`
       UPDATE users
       SET is_buddy = TRUE 
-      WHERE id = "${userId}"
-    `);
-        console.log(results)
+      WHERE id = ?
+    `, [userId]);
 
         if (results.changedRows >= 1) {
             const [updatedUser] = await db.execute(`
         SELECT * 
         FROM users 
-        WHERE id = "${userId}"; 
-      `);
+        WHERE id = ?; 
+      `, [userId]);
+
             console.log("Promoted User with userId:", userId, "->", updatedUser)
-            return updatedUser;
-
-        }
-        else {
+            return updatedUser[0]; // Return the individual user object
+        } else {
             console.log("Error promoting user")
-            return ("Error promoting user found")
+            return "Error promoting user found";
         }
-
     } catch (error) {
         console.error(error);
         throw error;
