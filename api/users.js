@@ -122,8 +122,15 @@ usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
 });
 
 usersRouter.post('/message', async (req, res) => {
-  const { sender_id, receiver_id, message_content } = req.body;
+  const { sender_id, receiver_username, message_content } = req.body;
   try {
+    // Get receiver ID from username
+    const [receiver] = await getUserbyUserName(receiver_username);
+    if (!receiver) {
+      return res.status(404).json({ success: false, error: 'Receiver not found' });
+    }
+    const receiver_id = receiver.id;
+
     await createMessage(sender_id, receiver_id, message_content);
     res.status(200).json({ success: true });
   } catch (error) {
