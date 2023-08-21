@@ -193,7 +193,6 @@ async function getMessagesForUser(user_id) {
 // }
 
 // testMessages();
-getMessages(``)
 
 module.exports = {
     getAllUsers,
