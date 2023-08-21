@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const { createEvent } = require('./events');
+const { createSchedule } = require('./schedules');
 
 const dropTables = async () => {
   try {
@@ -116,6 +117,11 @@ async function createUser(user) {
       WHERE username='${username}';`,
     );
 
+    const userId = data[0].id;
+
+    if (userId) {
+      await createSchedule(userId);
+    }
     delete data[0].password
     console.log("Added User Details ->:", data);
 
