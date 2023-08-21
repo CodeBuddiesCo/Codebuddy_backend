@@ -68,23 +68,23 @@ async function getUserById(id) {
 
 async function getUserbyUserName(username) {
     try {
-      const [userByUserName] = await db.execute(`
+        const [userByUserName] = await db.execute(`
         SELECT * 
         FROM users 
         WHERE username = ?; 
       `, [username]);
-  
-      if (userByUserName[0]) {
-        console.log("User By UserName:", username, "->", userByUserName);
-        return userByUserName;
-      } else {
-        return "Username is not registered";
-      }
+
+        if (userByUserName[0]) {
+            console.log("User By UserName:", username, "->", userByUserName);
+            return userByUserName;
+        } else {
+            return "Username is not registered";
+        }
     } catch (error) {
-      console.error("error getting user by username", error);
-      throw error;
+        console.error("error getting user by username", error);
+        throw error;
     }
-  }  
+}
 
 async function getUserbyUserNameOrEmail(username, email) {
     try {
@@ -142,37 +142,58 @@ async function promoteUserToBuddy(userId) {
     }
 }
 
+// async function getAllMessages() {
+//     try {
+//         const [messages] = await db.execute(`
+//         SELECT *
+//         FROM messages;
+//         `);
+//         console.log(messages);
+//         return messages;
+//     } catch (error) {
+//         console.error("Error retrieving messages");
+//         throw error;
+//     }
+// }
+
 async function createMessage(sender_id, receiver_id, message_content) {
     try {
-      await db.execute(`
-        INSERT INTO messages (sender_id, receiver_id, message_content)
-        VALUES (?, ?, ?);
-      `, [sender_id, receiver_id, message_content]);
-  
-      console.log("Message sent successfully");
+        await db.execute(`
+      INSERT INTO messages (sender_id, receiver_id, message_content)
+      VALUES (?, ?, ?);
+    `, [sender_id, receiver_id, message_content]);
+
+        console.log("Message sent successfully");
     } catch (error) {
-      console.error("Error sending message:", error);
-      throw error;
+        console.error("Error sending message:");
+        throw error;
     }
-  }  
-  
-  async function getMessages(user1_id, user2_id) {
+}
+
+async function getMessages(user1_id, user2_id) {
     try {
-      const [messages] = await db.execute(`
+        const [messages] = await db.execute(`
         SELECT * 
         FROM messages 
         WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
         ORDER BY timestamp ASC;
       `, [user1_id, user2_id, user2_id, user1_id]);
-  
-      console.log("Messages retrieved successfully", messages);
-      return messages;
+
+        console.log("Messages retrieved successfully", messages);
+        return messages;
     } catch (error) {
-      console.error("Error retrieving messages");
-      throw error;
+        console.error("Error retrieving messages");
+        throw error;
     }
-  }
-  
+}
+
+// async function testMessages() {
+//     await createMessage(2, 3, "Hello");
+//     await getAllMessages();
+// }
+
+// testMessages();
+// getAllMessages(``)
 module.exports = {
     getAllUsers,
     createUser,
@@ -180,6 +201,6 @@ module.exports = {
     getUserbyUserName,
     promoteUserToBuddy,
     getUserById,
-    createMessage, 
+    createMessage,
     getMessages
 };
