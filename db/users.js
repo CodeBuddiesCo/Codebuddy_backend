@@ -143,6 +143,37 @@ async function promoteUserToBuddy(userId) {
     }
 }
 
+async function createMessage(sender_id, receiver_id, message_content) {
+    try {
+      await db.execute(`
+        INSERT INTO messages (sender_id, receiver_id, message_content)
+        VALUES (?, ?, ?);
+      `, [sender_id, receiver_id, message_content]);
+  
+      console.log("Message sent successfully");
+    } catch (error) {
+      console.error("Error sending message");
+      throw error;
+    }
+  }
+  
+  async function getMessages(user1_id, user2_id) {
+    try {
+      const [messages] = await db.execute(`
+        SELECT * 
+        FROM messages 
+        WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+        ORDER BY timestamp ASC;
+      `, [user1_id, user2_id, user2_id, user1_id]);
+  
+      console.log("Messages retrieved successfully", messages);
+      return messages;
+    } catch (error) {
+      console.error("Error retrieving messages");
+      throw error;
+    }
+  }
+  
 module.exports = {
     getAllUsers,
     createUser,
@@ -150,4 +181,6 @@ module.exports = {
     getUserbyUserName,
     promoteUserToBuddy,
     getUserById,
+    createMessage, 
+    getMessages
 };
