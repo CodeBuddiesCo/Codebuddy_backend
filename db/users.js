@@ -68,24 +68,23 @@ async function getUserById(id) {
 
 async function getUserbyUserName(username) {
     try {
-        const [userByUserName] = await db.execute(`
-      SELECT * 
-      FROM users 
-      WHERE username = "${username}"; 
-    `);
-
-        if (userByUserName[0]) {
-            console.log("User By UserName:", username, "->", userByUserName)
-            return userByUserName;
-        } else {
-            return ("Username is not registered")
-        }
-
+      const [userByUserName] = await db.execute(`
+        SELECT * 
+        FROM users 
+        WHERE username = ?; 
+      `, [username]);
+  
+      if (userByUserName[0]) {
+        console.log("User By UserName:", username, "->", userByUserName);
+        return userByUserName;
+      } else {
+        return "Username is not registered";
+      }
     } catch (error) {
-        console.error("error getting user by username");
-        throw error;
+      console.error("error getting user by username", error);
+      throw error;
     }
-}
+  }  
 
 async function getUserbyUserNameOrEmail(username, email) {
     try {
