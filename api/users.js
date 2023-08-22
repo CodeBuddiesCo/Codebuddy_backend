@@ -105,7 +105,7 @@ usersRouter.post('/login', async function (req, res) {
   }
 });
 
-usersRouter.put('/promote/:id', requireUser, requireAdmin, async (req, res) => {
+usersRouter.put('/promote/:id', validateToken, requireUser, requireAdmin, async (req, res) => {
   const userId = req.params.id;
 
   try {
