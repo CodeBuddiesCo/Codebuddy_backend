@@ -1,7 +1,7 @@
 const db = require("./db");
 
 
-// * gets a single event data by ID - working returns array
+// * No APT gets a single event data by ID - working returns array
 async function getEventById(id) {
 
   try {
@@ -23,7 +23,7 @@ async function getEventById(id) {
 
 }
 
-// * connects an event to a schedule when they create it (buddy only) - Does not deplete open spots
+// * No API connects an event to a schedule when they create it (buddy only) - Does not deplete open spots
 async function addBuddyEventToBuddySchedule(scheduleId, eventId) {
   try {
     
@@ -51,7 +51,7 @@ async function addBuddyEventToBuddySchedule(scheduleId, eventId) {
   }
 }
 
-// * connects an event to a schedule when they sign up - Depletes open spots
+// ? API connects an event to a schedule when they sign up - Depletes open spots
 async function addEventToSchedule(scheduleId, eventId) {
   try {
     const requestedEvent = await getEventById(eventId);

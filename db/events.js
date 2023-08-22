@@ -3,7 +3,7 @@ const { getScheduleByUserId, getScheduleOwnerByScheduleId } = require("./schedul
 const { addBuddyEventToBuddySchedule, getEventById } = require("./schedule_events");
 const { getUserbyUserName } = require("./users");
 
-// * creates a new event and adds the event to the schedule of the buddy that created it- working 
+// ? API creates a new event and adds the event to the schedule of the buddy that created it- working 
 async function createEvent(event) {
   try {
     
@@ -40,7 +40,7 @@ async function createEvent(event) {
   }
 }
 
-// * working to return an object of the event details with an attached array of every user that is signed up to attend - will be helper function for other event functions
+// * NO API working to return an object of the event details with an attached array of every user that is signed up to attend - will be helper function for other event functions
 async function getEventAndAttendees(eventId) {
   try {
     const scheduleIdsWithSelectedEvent = [];
@@ -76,7 +76,7 @@ async function getEventAndAttendees(eventId) {
   }
 }
 
-// * retrieves all events with attendees - Returns an array of events
+// * API retrieves all events with attendees - Returns an array of events
 async function getAllEvents() {
 
   try {
@@ -106,7 +106,7 @@ async function getAllEvents() {
 
 }
 
-// * retrieves all future events with attendees - Returns an array of events
+// * API retrieves all future events with attendees - Returns an array of events
 async function getAllFutureEvents() {
 
   const date = new Date().toJSON();
@@ -139,7 +139,7 @@ async function getAllFutureEvents() {
 
 }
 
-// * Retrieves a list of events that belong to a specific Buddy with attendees - returns an array of events
+// * API Retrieves a list of events that belong to a specific Buddy with attendees - returns an array of events
 async function getEventsByBuddy(buddyName) {
 
   try {
@@ -169,7 +169,38 @@ async function getEventsByBuddy(buddyName) {
 
 }
 
-// * Retrieves a list of events that belong to a specific code language with list of attendees - working returns an array of events
+// * API Retrieves a list of events that belong to two Specific Buddies with attendees - returns an array of events
+async function getEventsByBothBuddies(buddyOne, buddyTwo) {
+
+  try {
+    const eventIdArray = []
+    const allEvents = []
+
+    const [events] = await db.execute(`
+    SELECT *
+    FROM events
+    WHERE buddy_one = "${buddyOne}" AND buddy_two = "${buddyTwo}"
+    OR buddy_one = "${buddyTwo}" AND buddy_two = "${buddyOne}";`
+  );
+
+    events.map(event => eventIdArray.push(event.id))
+
+    await Promise.all (eventIdArray.map(async(id) => {
+      const event = await getEventAndAttendees(id);
+      allEvents.push(event)
+    }))
+
+    console.log("Events by Buddies,", buddyOne, "&", buddyTwo, "->", allEvents);
+    return allEvents;
+
+  } catch (error) {
+    console.error("Error getting event by Buddies", buddyOne, "&", buddyTwo);
+    throw error;
+  }
+
+}
+
+// ? API Retrieves a list of events that belong to a specific code language with list of attendees - working returns an array of events
 async function getEventsByCodeLanguage(codeLanguage) {
 
   try {
@@ -199,7 +230,7 @@ async function getEventsByCodeLanguage(codeLanguage) {
 
 }
 
-// * Retrieves a list of events that match both primary and secondary code languages with attendees - returns an array of events 
+// ? API Retrieves a list of events that match both primary and secondary code languages with attendees - returns an array of events 
 // ? not sure if this is working I don't have correct seed Data to test
 async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
 
@@ -266,5 +297,6 @@ module.exports = {
  getEventsByCodeLanguage,
  getEventsByBothCodeLanguages,
  getEventAndAttendees,
- deleteEvent
+ deleteEvent,
+ getEventsByBothBuddies
 };

@@ -1,6 +1,6 @@
 const db = require("./db")
 
-// * creates a schedule to contain events they registered for - working returns []
+// * No API creates a schedule to contain events they registered for - working returns []
 async function createSchedule(userId) {
   try {
     
@@ -28,7 +28,7 @@ async function createSchedule(userId) {
   }
 }
 
-// * Helper function that connects the schedule with the user and links the scheduled events
+// * No API Helper function that connects the schedule with the user and links the scheduled events
 async function attachEventsToScheduleById(scheduleId) {
   try {
     const [userSchedule] = await db.execute(
@@ -65,7 +65,7 @@ async function attachEventsToScheduleById(scheduleId) {
   }
 }
 
-// * Working and returning an array of all schedules with connected events 
+// ? API Working and returning an array of all schedules with connected events 
 async function getAllSchedules() {
 
   try {
@@ -94,7 +94,7 @@ async function getAllSchedules() {
 
 }
 
-// * Working and returns an array with the users Schedule with enrolled Events
+// ? API Working and returns an array with the users Schedule with enrolled Events
 async function getScheduleWithEventsByUserId(userId) {
   try {
     const scheduleIdArray = []
@@ -122,7 +122,7 @@ async function getScheduleWithEventsByUserId(userId) {
   }
 }
 
-// * working as a helper function in create event - does not get connected events
+// * No API working as a helper function in create event - does not get connected events
 async function getScheduleByUserId(userId) {
   try {
 
@@ -141,7 +141,7 @@ async function getScheduleByUserId(userId) {
   }
 }
 
-// * returns an array only of all schedule data with matching id - Does not include events attached to schedule
+// * NO API returns an array only of all schedule data with matching id - Does not include events attached to schedule
 async function getScheduleById(id) {
   try {
 
@@ -160,7 +160,7 @@ async function getScheduleById(id) {
   }
 }
 
-// * working as a helper function in getEventAndAttendees - returns only the name of the schedule owner for a specific schedule Id
+// * NO API working as a helper function in getEventAndAttendees - returns only the name of the schedule owner for a specific schedule Id
 async function getScheduleOwnerByScheduleId(id) {
   try {
 
@@ -179,6 +179,8 @@ async function getScheduleOwnerByScheduleId(id) {
     throw error;
   }
 }
+
+// ! Delete Schedule 
 
 module.exports = {
   createSchedule,
