@@ -2,8 +2,8 @@ const db = require("./db");
 const { getScheduleByUserId, getScheduleOwnerByScheduleId } = require("./schedules");
 const { addBuddyEventToBuddySchedule, getEventById } = require("./schedule_events");
 const { getUserbyUserName } = require("./users");
-
-// ? API creates a new event and adds the event to the schedule of the buddy that created it- working 
+ 
+// * API creates a new event and adds the event to the schedule of the buddy that created it and second buddy if listed- working 
 async function createEvent(event) {
   try {
     
@@ -22,13 +22,25 @@ async function createEvent(event) {
     );
     
     const eventId = newEvent[0].id
-    const userToAddEventTo = await getUserbyUserName(buddy_one);
-    const userId = userToAddEventTo[0].id
-    const userScheduleToAddEventTo = await getScheduleByUserId(userId);
-    const scheduleId = userScheduleToAddEventTo[0].id
+    const userOneToAddEventTo = await getUserbyUserName(buddy_one);
+    const userIdOne = userOneToAddEventTo[0].id
+    const userScheduleToAddEventTo = await getScheduleByUserId(userIdOne);
+    const scheduleIdBuddyOne = userScheduleToAddEventTo[0].id
 
-    if (scheduleId) {
-      await addBuddyEventToBuddySchedule(scheduleId, eventId);
+    if (scheduleIdBuddyOne) {
+      await addBuddyEventToBuddySchedule(scheduleIdBuddyOne, eventId);
+    }
+
+    if (buddy_two !== "open" && buddy_two !== "closed" && buddy_two !== null) {
+      console.log("🚀 ~ file: events.js:36 ~ createEvent ~ buddy_two:", buddy_two)
+      const userTwoToAddEventTo = await getUserbyUserName(buddy_two);
+      const userIdTwo = userTwoToAddEventTo[0].id
+      const userScheduleToAddEventTo = await getScheduleByUserId(userIdTwo);
+      const scheduleIdBuddyTwo = userScheduleToAddEventTo[0].id
+  
+      if (scheduleIdBuddyTwo) {
+        await addBuddyEventToBuddySchedule(scheduleIdBuddyTwo, eventId);
+      }
     }
     
     console.log("Added Event Details ->", newEvent); 
@@ -200,7 +212,7 @@ async function getEventsByBothBuddies(buddyOne, buddyTwo) {
 
 }
 
-// ? API Retrieves a list of events that belong to a specific code language with list of attendees - working returns an array of events
+// * API Retrieves a list of events that belong to a specific code language with list of attendees - working returns an array of events
 async function getEventsByCodeLanguage(codeLanguage) {
 
   try {
@@ -230,8 +242,7 @@ async function getEventsByCodeLanguage(codeLanguage) {
 
 }
 
-// ? API Retrieves a list of events that match both primary and secondary code languages with attendees - returns an array of events 
-// ? not sure if this is working I don't have correct seed Data to test
+// * API Retrieves a list of events that match both primary and secondary code languages with attendees - returns an array of events 
 async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
 
   try {
@@ -283,7 +294,9 @@ async function deleteEvent(eventId){
   }
 }
 
-// ! second Buddy sign up 
+// ! second Buddy sign up - after the fact
+
+// ! get all events where buddy Two is still available 
 
 // ! updates an existing event
 

@@ -11,6 +11,16 @@ function requireUser(req, res, next) {
   next();
 }
 
+function requireBuddy(req, res, next) {
+  if (!req.user.is_buddy) {
+    return res.status(401).json({
+      name: "UnauthorizedError",
+      message: "You must be a buddy to create an event",
+    });
+  }
+  next();
+}
+
 const requireAdmin = (req, res, next) => {
   if (!req.user || !req.user.isAdmin) {
     return next({
@@ -43,6 +53,7 @@ function validateToken(req, res, next) {
 module.exports = {
   requireUser,
   requireAdmin,
-  validateToken
+  validateToken,
+  requireBuddy
 }
 

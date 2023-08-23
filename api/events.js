@@ -1,6 +1,7 @@
 const express = require('express');
-const { getAllEvents, getAllFutureEvents, getEventsByBuddy, getEventsByBothBuddies } = require('../db/events');
-const { requireUser, requireAdmin } = require('./utils');
+const { getAllEvents, getAllFutureEvents, getEventsByBuddy, getEventsByBothBuddies, getEventsByCodeLanguage, getEventsByBothCodeLanguages, createEvent } = require('../db/events');
+const { getScheduleWithEventsByUserId } = require('../db/schedules');
+const { requireUser, requireAdmin, requireBuddy } = require('./utils');
 const eventsRouter = express.Router();
 
 // * Get all Events - /api/events
@@ -31,8 +32,8 @@ eventsRouter.get("/upcoming", async (req, res, next) =>{
 
 })
 
-// * Get Events by Buddy /api/:buddy
-eventsRouter.get("/:buddy", async (req, res, next) =>{
+// * Get Events by Buddy /api/events/search_by_buddy/:buddy
+eventsRouter.get("/search_by_buddy/:buddy", async (req, res, next) =>{
   const { buddy } = req.params 
 
   try {
@@ -58,9 +59,8 @@ eventsRouter.get("/:buddy", async (req, res, next) =>{
 
 })
 
-// ? Working but thinking about additional behaviors to search by the buddies individually if events not found together
-// * Get Events by Both Buddies /api/:buddy_one/:buddy_two
-eventsRouter.get("/:buddy_one/:buddy_two", async (req, res, next) =>{
+// * Get Events by Both Buddies /api/events/search_by_buddy/:buddy_one/:buddy_two
+eventsRouter.get("/search_by_buddy/:buddy_one/:buddy_two", async (req, res, next) =>{
   const { buddy_one, buddy_two } = req.params 
 
   try {
@@ -86,15 +86,91 @@ eventsRouter.get("/:buddy_one/:buddy_two", async (req, res, next) =>{
 
 })
 
-// ! Get Events by User
+// * Get Events by User /api/events/my_schedule
+eventsRouter.get("/my_schedule", requireUser, async (req, res, next) =>{
 
-// ! Get Events by Primary Language 
+  try {
 
-// ! Get Events by Both Languages 
+    const [userEvents] = await getScheduleWithEventsByUserId(req.user.id)
+    console.log("🚀 events.js:97_eventsRouter.get_userEvents:", userEvents)
+    
+    res.send(userEvents)
 
-// ! Create Event
+  } catch (error) {
+    next (error);
+  }
 
-// ! Sign up for Event - Non Buddy 
+})
+
+// * Get Events by Primary Language /api/events/search_by_code_language/:language
+eventsRouter.get("/search_by_code_language/:language", async (req, res, next) =>{
+  const { language } = req.params 
+
+  try {
+    
+    const allEvents = await getEventsByCodeLanguage(language);
+
+    if (allEvents.length === 0 ) {
+
+      next({
+        error: "NotFoundError",
+        message: `No Events for code language, ${language}, found`,
+      });
+
+    } else {
+
+      res.send(allEvents)
+
+    }
+
+  } catch (error) {
+    next (error);
+  }
+
+})
+
+// * Get Events by Both Languages /api/events/search_by_code_language/:language_one/:language_two
+eventsRouter.get("/search_by_code_language/:language_one/:language_two", async (req, res, next) =>{
+  const { language_one, language_two } = req.params 
+
+  try {
+    
+    const allEvents = await getEventsByBothCodeLanguages(language_one, language_two)
+
+    if (allEvents.length === 0 ) {
+
+      next({
+        error: "NotFoundError",
+        message: `No Events for code languages, ${language_one}, &, ${language_two} found`,
+      });
+
+    } else {
+
+      res.send(allEvents)
+
+    }
+
+  } catch (error) {
+    next (error);
+  }
+
+})
+
+// * Create Event /api/events/
+eventsRouter.post("/", requireBuddy, async (req, res, next) =>{
+  const eventData = req.body;
+  try {
+    const newEvent = await createEvent(eventData);
+    res.send(newEvent);
+  } catch (error) {
+    next (error)
+  }
+
+})
+
+// ! Get All Schedules 
+
+// ! Sign up for Event - Not Acting as buddy 
 
 // ! Second Buddy Sign up - Still need DB Function
 
