@@ -57,7 +57,7 @@ const createTables = async () => {
       CREATE TABLE events (
         id INT AUTO_INCREMENT PRIMARY KEY,
         buddy_one VARCHAR(100) NOT NULL,
-        buddy_two VARCHAR(100),
+        buddy_two VARCHAR(100) NOT NULL,
         primary_language VARCHAR(100) NOT NULL,
         secondary_language VARCHAR(100),
         date_time DATETIME NOT NULL,
@@ -170,7 +170,7 @@ async function seedEventData() {
     },
     {
       buddy_one: 'Hollye',
-      buddy_two: null,
+      buddy_two: "open",
       primary_language: 'HTML',
       secondary_language: null,
       date_time: '2023-8-22 13:30:00',
