@@ -66,7 +66,7 @@ async function getUserById(id) {
 
     delete user[0].password
     console.log("User by Id", id, "->", user);
-    return user;
+    return user[0];
 
   } catch (error) {
     console.error("Error getting user by Id", id);
