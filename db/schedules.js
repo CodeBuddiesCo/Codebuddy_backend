@@ -1,4 +1,4 @@
-const db = require("./db")
+const db = require("./db");
 
 // * No API creates a schedule to contain events they registered for - working returns []
 async function createSchedule(userId) {
@@ -180,8 +180,61 @@ async function getScheduleOwnerByScheduleId(id) {
   }
 }
 
-// ! Delete Schedule 
- 
+// * No API Delete all schedule_events for specific schedule
+async function deleteScheduleEventsForScheduleId(scheduleId) {
+  try {
+    
+    const [results, rows, fields] = await db.execute(
+      `
+        DELETE FROM schedule_events 
+        WHERE schedule_id = "${scheduleId}";
+      `,
+    );
+
+    console.log(results)
+    if (results.affectedRows === 1) {
+
+      console.log("Success deleting all schedule events with scheduleId", scheduleId); 
+      return;
+
+    } else {
+      console.error("Error deleting all schedule events with scheduleId", scheduleId)
+    }
+
+  } catch (error) {
+    console.error("Error deleting all schedule events with scheduleId", scheduleId);
+    throw error;
+  }
+}
+
+// * No API Delete a Schedule - Fully removes the schedule - only a helper function if user is deleted
+async function deleteSchedule(scheduleId){
+  try {
+
+    await deleteScheduleEventsForScheduleId(scheduleId);
+
+    const [results,rows,fields] = await db.execute(`
+      DELETE FROM schedules 
+      WHERE id="${scheduleId}";`
+    );
+
+    console.log(results)
+    if (results.affectedRows === 1) {
+
+      console.log("Success deleting schedule with scheduleId", scheduleId); 
+      return("Success deleting schedule");
+
+    } else {
+      console.error("Error deleting schedule with scheduleId", scheduleId);
+      return("Error deleting schedule")
+    }
+
+  } catch (error) {
+    console.error("Error deleting schedule with scheduleId", scheduleId);
+    throw error;
+  }
+
+}
 
 module.exports = {
   createSchedule,
@@ -190,6 +243,6 @@ module.exports = {
   getAllSchedules,
   getScheduleOwnerByScheduleId,
   getScheduleByUserId,
-  getScheduleWithEventsByUserId
-
+  getScheduleWithEventsByUserId,
+  deleteSchedule
 };
