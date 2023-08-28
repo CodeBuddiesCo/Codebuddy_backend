@@ -25,7 +25,7 @@ async function createEvent(event) {
     const userOneToAddEventTo = await getUserbyUserName(buddy_one);
     const userIdOne = userOneToAddEventTo[0].id
     const userScheduleToAddEventTo = await getScheduleByUserId(userIdOne);
-    const scheduleIdBuddyOne = userScheduleToAddEventTo[0].id
+    const scheduleIdBuddyOne = userScheduleToAddEventTo.id
 
     if (scheduleIdBuddyOne) {
       await addBuddyEventToBuddySchedule(scheduleIdBuddyOne, eventId);
@@ -36,7 +36,7 @@ async function createEvent(event) {
       const userTwoToAddEventTo = await getUserbyUserName(buddy_two);
       const userIdTwo = userTwoToAddEventTo[0].id
       const userScheduleToAddEventTo = await getScheduleByUserId(userIdTwo);
-      const scheduleIdBuddyTwo = userScheduleToAddEventTo[0].id
+      const scheduleIdBuddyTwo = userScheduleToAddEventTo.id
   
       if (scheduleIdBuddyTwo) {
         await addBuddyEventToBuddySchedule(scheduleIdBuddyTwo, eventId);
@@ -52,7 +52,7 @@ async function createEvent(event) {
   }
 }
 
-// * NO API working to return an object of the event details with an attached array of every user that is signed up to attend - will be helper function for other event functions
+// * API working to return an object of the event details with an attached array of every user that is signed up to attend - will be helper function for other event functions
 async function getEventAndAttendees(eventId) {
   try {
     const scheduleIdsWithSelectedEvent = [];
@@ -273,34 +273,73 @@ async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
 
 }
 
-// ? Deletes an event - This worked but only to delete an event that is not connected to a schedule - I think i need to add
-// ? additional code to first delete the schedule_event before fully deleting the event
-async function deleteEvent(eventId){
+// ? API Updates the event status to not active - used to retain history of event - available to primary buddy only or admin
+async function cancelEvent(eventId){
   try {
 
     const [results,rows,fields] = await db.execute(`
-      DELETE FROM events 
+      UPDATE events 
+      SET is_active = false
       WHERE id="${eventId}";`
     );
 
+    const [cancelledEvent] = await db.execute(`
+      SELECT * 
+      FROM events
+      WHERE id="${eventId}";
+    `)
 
 
-    console.log("Status of event deletion request ->", results);
+    console.log("Cancelled Event ->", cancelledEvent);
     return;
 
   } catch (error) {
-    console.error("DB error deleting event");
+    console.error("DB error cancelling event");
     throw error;
   }
 }
 
-// ! second Buddy sign up - after the fact
+// * API get all events where buddy Two is open for sign up
+async function getAllEventsWithOpenBuddy() {
 
-// ! get all events where buddy Two is still available 
+  try {
+    const eventIdArray = []
+    const allEvents = []
 
-// ! updates an existing event
+    const [events] = await db.execute(`
+      SELECT *
+      FROM events
+      WHERE buddy_two="open";`
+    );
 
-// ! search for specific event
+    events.map(event => eventIdArray.push(event.id))
+
+    await Promise.all (eventIdArray.map(async(id) => {
+      const event = await getEventAndAttendees(id);
+      allEvents.push(event)
+    }))
+      
+
+    console.log("All Events with open buddy ->", allEvents);
+    return allEvents;
+
+  } catch (error) {
+    console.error("Error getting all Events with open buddy");
+    throw error;
+  }
+
+}
+
+// ! Delete an event - Fully removes the event - Available to only admins 
+
+// ! Update event Buddies - Only available to admins
+
+// ! Updates Date and time of event - only available to buddy one 
+
+// ! Updates Meeting link for event - only available to buddy one or buddy two 
+
+// ! search for specific event 
+
 
 module.exports = {
  createEvent,
@@ -310,6 +349,7 @@ module.exports = {
  getEventsByCodeLanguage,
  getEventsByBothCodeLanguages,
  getEventAndAttendees,
- deleteEvent,
- getEventsByBothBuddies
+ cancelEvent,
+ getEventsByBothBuddies,
+ getAllEventsWithOpenBuddy
 };
