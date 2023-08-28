@@ -33,7 +33,7 @@ async function attachEventsToScheduleById(scheduleId) {
   try {
     const [userSchedule] = await db.execute(
       `
-        SELECT schedules.id AS schedule_id, schedules.user_id, users.username AS owner_name
+        SELECT users.username AS owner_name, schedules.id AS schedule_id, schedules.user_id
         FROM schedules 
         INNER JOIN users ON schedules.user_id = users.id
         WHERE schedules.id='${scheduleId}';
@@ -44,7 +44,7 @@ async function attachEventsToScheduleById(scheduleId) {
       const [matchingEvents] = await db.execute(
         `
           SELECT events.id AS event_id, events.buddy_one, events.buddy_two, events.primary_language, events.secondary_language,
-          events.date_time, events.spots_available, events.meeting_link, schedule_events.id AS schedule_events_id
+          events.date_time, events.spots_available, events.meeting_link, schedule_events.id AS schedule_events_id, events.is_Active
           FROM events
           INNER JOIN schedule_events ON schedule_events.event_id = events.id
           WHERE schedule_events.schedule_id='${scheduleId}';
@@ -65,7 +65,7 @@ async function attachEventsToScheduleById(scheduleId) {
   }
 }
 
-// ? API Working and returning an array of all schedules with connected events 
+// * API Working and returning an array of all schedules with connected events 
 async function getAllSchedules() {
 
   try {
@@ -132,8 +132,8 @@ async function getScheduleByUserId(userId) {
       WHERE user_id = "${userId}";`
     );
 
-    console.log("Schedule by User Id", userId, "->", scheduleByUserId);
-    return scheduleByUserId;
+    console.log("Schedule by User Id", userId, "->", scheduleByUserId[0]);
+    return scheduleByUserId[0];
 
   } catch (error) {
     console.error("Error getting schedule by user id", userId);
@@ -181,6 +181,7 @@ async function getScheduleOwnerByScheduleId(id) {
 }
 
 // ! Delete Schedule 
+ 
 
 module.exports = {
   createSchedule,

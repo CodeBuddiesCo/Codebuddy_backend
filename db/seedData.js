@@ -62,7 +62,8 @@ const createTables = async () => {
         secondary_language VARCHAR(100),
         date_time DATETIME NOT NULL,
         spots_available INT NOT NULL,
-        meeting_link VARCHAR(255) NOT NULL
+        meeting_link VARCHAR(255) NOT NULL, 
+        is_active BOOLEAN DEFAULT TRUE
       );
     `)
 
@@ -77,7 +78,8 @@ const createTables = async () => {
       CREATE TABLE schedule_events (
         id INT AUTO_INCREMENT PRIMARY KEY,
         schedule_id INTEGER REFERENCES schedules(id),        
-        event_id INTEGER REFERENCES events(id)
+        event_id INTEGER REFERENCES events(id),
+        UNIQUE (schedule_id, event_id)
       );
     `);
 
@@ -173,7 +175,7 @@ async function seedEventData() {
       buddy_two: "open",
       primary_language: 'HTML',
       secondary_language: null,
-      date_time: '2023-8-22 13:30:00',
+      date_time: '2023-8-31 13:30:00',
       spots_available: 3,
       meeting_link: 'https://us06web.zoom.us/j/88350212695?pwd=YXh5UWk0WTY2QWQ2S2tPS3BBWUxXdz09'
     },

@@ -1,6 +1,7 @@
 const express = require('express');
-const { getAllEvents, getAllFutureEvents, getEventsByBuddy, getEventsByBothBuddies, getEventsByCodeLanguage, getEventsByBothCodeLanguages, createEvent } = require('../db/events');
-const { getScheduleWithEventsByUserId } = require('../db/schedules');
+const { getAllEvents, getAllFutureEvents, getEventsByBuddy, getEventsByBothBuddies, getEventsByCodeLanguage, getEventsByBothCodeLanguages, createEvent, getEventAndAttendees } = require('../db/events');
+const { getScheduleWithEventsByUserId, getAllSchedules, getScheduleByUserId } = require('../db/schedules');
+const { secondBuddySignUp, addEventToSchedule } = require('../db/schedule_events');
 const { requireUser, requireAdmin, requireBuddy } = require('./utils');
 const eventsRouter = express.Router();
 
@@ -86,7 +87,7 @@ eventsRouter.get("/search_by_buddy/:buddy_one/:buddy_two", async (req, res, next
 
 })
 
-// * Get Events by User /api/events/my_schedule
+// * Get Schedule with Events by User /api/events/my_schedule
 eventsRouter.get("/my_schedule", requireUser, async (req, res, next) =>{
 
   try {
@@ -159,24 +160,111 @@ eventsRouter.get("/search_by_code_language/:language_one/:language_two", async (
 // * Create Event /api/events/
 eventsRouter.post("/", requireBuddy, async (req, res, next) =>{
   const eventData = req.body;
+
   try {
+
     const newEvent = await createEvent(eventData);
     res.send(newEvent);
+
   } catch (error) {
     next (error)
   }
 
 })
 
-// ! Get All Schedules 
+// * Get All Schedules /api/schedules 
+eventsRouter.get("/schedules", requireAdmin, async (req, res, next) => {
 
-// ! Sign up for Event - Not Acting as buddy 
+  try {
 
-// ! Second Buddy Sign up - Still need DB Function
+    const allSchedules = await getAllSchedules();
+    res.send(allSchedules)
+    
+  } catch (error) {
+    next (error)
+  }
+
+})
+
+// * Get all Events - /api/events
+eventsRouter.get("/", async (req, res, next) =>{
+  
+  try {
+    
+    const allEvents = await getAllEvents();
+    res.send(allEvents)
+
+  } catch (error) {
+    next (error);
+  }
+
+})
+
+// * Get Event by Event Id /api/events/search_by_id/:eventId
+eventsRouter.get("/search_by_id/:eventId", async (req, res, next) =>{
+  const { eventId } = req.params
+
+  try {
+    
+    const eventById = await getEventAndAttendees(eventId)
+    res.send(eventById)
+
+  } catch (error) {
+    next (error);
+  }
+
+})
+
+// ! Sign up for Event - Not Acting as buddy  
+eventsRouter.post("/signup/:eventId", requireUser, async (req, res, next) => {
+  const { id } = req.user;
+  console.log("🚀 ~ file: events.js:221 ~ eventsRouter.post ~ userId:", id)
+  const { eventId } = req.params;
+
+  
+  try {
+
+    const schedule = await getScheduleByUserId(id)
+    const scheduleId = schedule.id;
+
+    if (scheduleId) {
+
+      const enrolledEvent = await addEventToSchedule(scheduleId, eventId);
+      res.send(enrolledEvent)
+
+    } else {
+
+      next({
+        error: "NotFoundError",
+        message: `No schedule found to add event`,
+      });
+
+    }
+
+    
+  } catch (error) {
+    next (error)
+  }
+}) 
+
+// * Second Buddy Sign up api/events/:eventID
+eventsRouter.patch("/buddy_signup/:eventId", requireBuddy, async (req, res, next) => {
+  const { buddyUserName } = req.body;
+  const { eventId } = req.params;
+
+  try {
+
+    const updatedEvent = await secondBuddySignUp(eventId, buddyUserName)
+    res.send(updatedEvent)
+
+    
+  } catch (error) {
+    next (error)
+  }
+
+})
 
 // ! Cancel registration for event - Still need DB Function
-
-
 
 
 module.exports = eventsRouter;
