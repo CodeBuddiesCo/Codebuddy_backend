@@ -273,7 +273,7 @@ async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
 
 }
 
-// ? API Updates the event status to not active - used to retain history of event - available to primary buddy only or admin
+// * API Updates the event status to not active - used to retain history of event - available to primary buddy only or admin
 async function cancelEvent(eventId){
   try {
 
@@ -330,13 +330,67 @@ async function getAllEventsWithOpenBuddy() {
 
 }
 
-// ! Delete an event - Fully removes the event - Available to only admins 
+// * No API Delete all schedule_events for specific event
+async function deleteScheduleEventsForEventId(eventId) {
+  try {
+    
+    const [results, rows, fields] = await db.execute(
+      `
+        DELETE FROM schedule_events 
+        WHERE event_id = "${eventId}";
+      `,
+    );
 
-// ! Update event Buddies - Only available to admins
+    console.log(results)
+    if (results.affectedRows === 1) {
 
-// ! Updates Date and time of event - only available to buddy one 
+      console.log("Success deleting all schedule events with eventId", eventId); 
+      return;
 
-// ! Updates Meeting link for event - only available to buddy one or buddy two 
+    } else {
+      console.error("Error deleting all schedule events with eventId", eventId)
+    }
+
+  } catch (error) {
+    console.error("Error deleting all schedule events with eventId", eventId);
+    throw error;
+  }
+}
+
+// * API Delete an event - Fully removes the event - Available to only admins 
+async function deleteEvent(eventId){
+  try {
+
+    await deleteScheduleEventsForEventId(eventId);
+
+    const [results,rows,fields] = await db.execute(`
+      DELETE FROM events 
+      WHERE id="${eventId}";`
+    );
+
+    console.log(results)
+    if (results.affectedRows === 1) {
+
+      console.log("Success deleting event with eventId", eventId);
+      return("Success deleting event");
+
+    } else {
+      console.error("Error deleting event with eventId", eventId)
+      return("Error deleting event")
+    }
+
+  } catch (error) {
+    console.error("Error deleting event with eventId", eventId);
+    throw error;
+  }
+
+}
+
+// ! API Updates Date and time of event - only available to buddy one or admin
+
+// ! API Updates Meeting link for event - only available to buddy one, buddy two or admin
+
+// ! API Updates primary or secondary language of event - only available to buddy one or admin
 
 // ! search for specific event 
 
@@ -351,5 +405,6 @@ module.exports = {
  getEventAndAttendees,
  cancelEvent,
  getEventsByBothBuddies,
- getAllEventsWithOpenBuddy
+ getAllEventsWithOpenBuddy, 
+ deleteEvent
 };

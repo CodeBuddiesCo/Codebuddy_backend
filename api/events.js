@@ -1,7 +1,7 @@
 const express = require('express');
-const { getAllEvents, getAllFutureEvents, getEventsByBuddy, getEventsByBothBuddies, getEventsByCodeLanguage, getEventsByBothCodeLanguages, createEvent, getEventAndAttendees } = require('../db/events');
+const { getAllEvents, getAllFutureEvents, getEventsByBuddy, getEventsByBothBuddies, getEventsByCodeLanguage, getEventsByBothCodeLanguages, createEvent, getEventAndAttendees, cancelEvent, deleteEvent } = require('../db/events');
 const { getScheduleWithEventsByUserId, getAllSchedules, getScheduleByUserId } = require('../db/schedules');
-const { secondBuddySignUp, addEventToSchedule } = require('../db/schedule_events');
+const { secondBuddySignUp, addEventToSchedule, secondBuddyCancelSignUp, removeEventFromSchedule } = require('../db/schedule_events');
 const { requireUser, requireAdmin, requireBuddy } = require('./utils');
 const eventsRouter = express.Router();
 
@@ -215,10 +215,9 @@ eventsRouter.get("/search_by_id/:eventId", async (req, res, next) =>{
 
 })
 
-// ! Sign up for Event - Not Acting as buddy  
+// * Sign up for Event - Not Acting as buddy  /api/events/signup/:eventId
 eventsRouter.post("/signup/:eventId", requireUser, async (req, res, next) => {
   const { id } = req.user;
-  console.log("🚀 ~ file: events.js:221 ~ eventsRouter.post ~ userId:", id)
   const { eventId } = req.params;
 
   
@@ -230,6 +229,8 @@ eventsRouter.post("/signup/:eventId", requireUser, async (req, res, next) => {
     if (scheduleId) {
 
       const enrolledEvent = await addEventToSchedule(scheduleId, eventId);
+      console.log("🚀 ~ file: events.js:232 ~ eventsRouter.post ~ enrolledEvent:", enrolledEvent)
+      
       res.send(enrolledEvent)
 
     } else {
@@ -245,9 +246,10 @@ eventsRouter.post("/signup/:eventId", requireUser, async (req, res, next) => {
   } catch (error) {
     next (error)
   }
+
 }) 
 
-// * Second Buddy Sign up api/events/:eventID
+// * Second Buddy Sign up api/events/buddy_signup/:eventID
 eventsRouter.patch("/buddy_signup/:eventId", requireBuddy, async (req, res, next) => {
   const { buddyUserName } = req.body;
   const { eventId } = req.params;
@@ -264,7 +266,93 @@ eventsRouter.patch("/buddy_signup/:eventId", requireBuddy, async (req, res, next
 
 })
 
-// ! Cancel registration for event - Still need DB Function
+// * Cancel Event (Change status to inactive) /api/events/cancel/:eventId
+eventsRouter.patch("/cancel/:eventId", requireBuddy, async (req, res, next) => {
+  const { eventId } = req.params;
+
+  
+  try {
+
+    const cancelledEvent = await cancelEvent(eventId)
+    res.send(cancelledEvent)
+
+    
+  } catch (error) {
+    next (error)
+  }
+
+}) 
+
+// * Delete an event (fully delete the event) /api/events/delete/:eventId
+eventsRouter.delete("/delete/:eventId", requireAdmin, async (req, res, next) => {
+  const { eventId } = req.params;
+
+  
+  try {
+
+    const deletedEvent = await deleteEvent(eventId)
+    console.log("🚀 ~ file: events.js:296 ~ eventsRouter.delete ~ deletedEvent:", deletedEvent)
+    
+    res.send(deletedEvent)
+
+    
+  } catch (error) {
+    next (error)
+  }
+
+}) 
+
+// * Cancel second buddy event sign up api/events/buddy_cancel_signup/:eventID
+eventsRouter.patch("/buddy_cancel_signup/:eventId", requireBuddy, async (req, res, next) => {
+  const { buddyUserName } = req.body;
+  const { eventId } = req.params;
+
+  try {
+
+    const updatedEvent = await secondBuddyCancelSignUp(eventId, buddyUserName)
+    res.send(updatedEvent)
+
+    
+  } catch (error) {
+    next (error)
+  }
+
+})
+
+// * Cancel Non Buddy event sign up api/events/cancel_signup/:eventID
+eventsRouter.patch("/cancel_signup/:eventId", requireUser, async (req, res, next) => {
+  const { id } = req.user;
+  const { eventId } = req.params;
+
+  
+  try {
+
+    const schedule = await getScheduleByUserId(id)
+    const scheduleId = schedule.id;
+
+    if (scheduleId) {
+
+      const unEnrolledEvent = await removeEventFromSchedule(scheduleId, eventId);
+      res.send(unEnrolledEvent)
+
+    } else {
+
+      next({
+        error: "NotFoundError",
+        message: `No schedule found to remove event`,
+      });
+
+    }
+
+    
+  } catch (error) {
+    next (error)
+  }
+
+}) 
+
+
+
 
 
 module.exports = eventsRouter;
