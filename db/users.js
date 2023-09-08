@@ -194,12 +194,52 @@ async function getMessagesForUser(user_id) {
     }
   }  
 
-// async function testMessages() {
-//     await createMessage(2, 3, "Hello");
-//     await getAllMessages();
-// }
+// Mark a message as deleted
+async function markMessageAsDeleted(messageId) {
+  try {
+    await db.execute(`
+      UPDATE messages
+      SET marked_for_deletion = TRUE
+      WHERE id = ?;
+    `, [messageId]);
+    console.log("Marked message as deleted");
+  } catch (error) {
+    console.error("Error marking message as deleted:", error);
+    throw error;
+  }
+}
 
-// testMessages();
+// Delete old marked messages
+async function deleteOldMarkedMessages() {
+  try {
+    await db.execute(`
+      DELETE FROM messages
+      WHERE is_deleted = TRUE AND timestamp < NOW() - INTERVAL 1 WEEK
+    `);
+    console.log("Old marked messages deleted successfully");
+  } catch (error) {
+    console.error("Error deleting old marked messages:", error);
+    throw error;
+  }
+}
+
+// Fetch soft deleted messages for a user
+async function getDeletedMessagesForUser(user_id) {
+  try {
+    const [messages] = await db.execute(`
+      SELECT * 
+      FROM messages 
+      WHERE receiver_id = ? AND is_deleted = TRUE
+      AND timestamp >= NOW() - INTERVAL 1 WEEK
+      ORDER BY timestamp ASC;
+    `, [user_id]);
+    console.log("Deleted messages retrieved successfully");
+    return messages;
+  } catch (error) {
+    console.error("Error retrieving deleted messages");
+    throw error;
+  }
+}
 
 module.exports = {
     getAllUsers,
@@ -209,5 +249,8 @@ module.exports = {
     promoteUserToBuddy,
     getUserById,
     createMessage,
-    getMessagesForUser
+    getMessagesForUser,
+    markMessageAsDeleted,
+    deleteOldMarkedMessages,
+    getDeletedMessagesForUser
 };

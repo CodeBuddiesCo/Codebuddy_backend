@@ -3,7 +3,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
 const { requireUser, requireAdmin, validateToken } = require('./utils');
-const { getUserbyUserNameOrEmail, getAllUsers, createUser, getUserbyUserName, promoteUserToBuddy, createMessage, getMessagesForUser } = require('../db/users');
+const {
+  getUserbyUserNameOrEmail,
+  getAllUsers,
+  createUser,
+  getUserbyUserName,
+  promoteUserToBuddy,
+  createMessage,
+  getMessagesForUser,
+  markMessageAsDeleted,
+  deleteOldMarkedMessages
+} = require('../db/users');
 
 const usersRouter = express.Router();
 
@@ -143,6 +153,40 @@ usersRouter.get('/messages/:user_id', async (req, res) => {
   try {
     const user_id = req.params.user_id;
     const messages = await getMessagesForUser(user_id);
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Soft delete a message
+usersRouter.delete('/message/:messageId', async (req, res) => {
+  try {
+    const messageId = req.params.messageId;
+    await markMessageAsDeleted(messageId);
+    res.status(200).send('Message marked for deletion');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error marking message for deletion');
+  }
+});
+
+// Hard delete marked messages older than one week
+usersRouter.delete('/deleteOldMarkedMessages', async (req, res) => {
+  try {
+    await deleteOldMarkedMessages();
+    res.status(200).send('Old marked messages deleted successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting old marked messages');
+  }
+});
+
+// Fetch soft deleted messages
+usersRouter.get('/deletedMessages/:user_id', async (req, res) => {
+  try {
+    const user_id = req.params.user_id;
+    const messages = await getDeletedMessagesForUser(user_id);
     res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
