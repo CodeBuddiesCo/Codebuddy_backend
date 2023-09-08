@@ -9,13 +9,13 @@ const dropTables = async () => {
   try {
     console.log("connected");
     await db.query(`
-    DROP TABLE IF EXISTS messages;
-    `);
-    await db.query(`
       DROP TABLE IF EXISTS schedule_events;
     `);
     await db.query(`
       DROP TABLE IF EXISTS schedules;
+    `);
+    await db.query(`
+    DROP TABLE IF EXISTS messages;
     `);
     await db.query(`
       DROP TABLE IF EXISTS events;
@@ -23,9 +23,6 @@ const dropTables = async () => {
     await db.query(`
       DROP TABLE IF EXISTS users;
     `);
-    await db.query(`
-    DROP TABLE IF EXISTS messages;
-  `);
 
     console.log("Finished dropping tables!")
   } catch (error) {
@@ -90,6 +87,8 @@ const createTables = async () => {
       receiver_id INT NOT NULL,
       message_content TEXT NOT NULL,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      marked_for_deletion BOOLEAN DEFAULT FALSE,
+      deletion_timestamp DATETIME,
       FOREIGN KEY (sender_id) REFERENCES users(id),
       FOREIGN KEY (receiver_id) REFERENCES users(id)
     );
@@ -186,10 +185,17 @@ async function seedEventData() {
 }
 
 async function seedData() {
-  await dropTables()
-  await createTables()
-  await seedUserData()
-  await seedEventData()
+  try {
+    await dropTables();
+    await createTables();
+    await seedUserData();
+    await seedEventData();
+  } catch (error) {
+    console.error("Error during seeding:", error);
+  } finally {
+    db.end();
+    console.log("Database connection closed.");
+  }
 }
 
-seedData()
+seedData();
