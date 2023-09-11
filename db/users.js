@@ -227,9 +227,10 @@ async function deleteOldMarkedMessages() {
 async function getDeletedMessagesForUser(user_id) {
   try {
     const [messages] = await db.execute(`
-      SELECT * 
+      SELECT messages.*, users.username as sender_username, users.name as sender_name
       FROM messages 
-      WHERE receiver_id = ? AND marked_for_deletion = TRUE
+      JOIN users ON messages.sender_id = users.id
+      WHERE receiver_id = ? AND marked_for_deletion = 1
       AND timestamp >= NOW() - INTERVAL 1 WEEK
       ORDER BY timestamp ASC;
     `, [user_id]);
