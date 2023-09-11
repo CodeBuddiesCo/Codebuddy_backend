@@ -214,7 +214,7 @@ async function deleteOldMarkedMessages() {
   try {
     await db.execute(`
       DELETE FROM messages
-      WHERE is_deleted = TRUE AND timestamp < NOW() - INTERVAL 1 WEEK
+      WHERE marked_for_deletion = TRUE AND timestamp < NOW() - INTERVAL 1 WEEK
     `);
     console.log("Old marked messages deleted successfully");
   } catch (error) {
@@ -229,7 +229,7 @@ async function getDeletedMessagesForUser(user_id) {
     const [messages] = await db.execute(`
       SELECT * 
       FROM messages 
-      WHERE receiver_id = ? AND is_deleted = TRUE
+      WHERE receiver_id = ? AND marked_for_deletion = TRUE
       AND timestamp >= NOW() - INTERVAL 1 WEEK
       ORDER BY timestamp ASC;
     `, [user_id]);
