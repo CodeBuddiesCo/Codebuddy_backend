@@ -12,7 +12,8 @@ const {
   createMessage,
   getMessagesForUser,
   markMessageAsDeleted,
-  deleteOldMarkedMessages
+  deleteOldMarkedMessages,
+  getDeletedMessagesForUser
 } = require('../db/users');
 
 const usersRouter = express.Router();
