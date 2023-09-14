@@ -26,7 +26,7 @@ async function createUser(user) {
 
     if (userId) {
       await createSchedule(userId);
-    }  
+    }
 
     return newUser;
 
@@ -37,21 +37,21 @@ async function createUser(user) {
 }
 
 async function getAllUsers() {
-    try {
-        const [allUsers] = await db.execute(`
+  try {
+    const [allUsers] = await db.execute(`
       SELECT * 
       FROM users; 
     `);
 
-        allUsers.map((user) => delete user.password)
+    allUsers.map((user) => delete user.password)
 
-        console.log("Results from getAllUsers function ->", allUsers)
-        return allUsers
+    console.log("Results from getAllUsers function ->", allUsers)
+    return allUsers
 
-    } catch (error) {
-        console.error("error getting all users");
-        throw error;
-    }
+  } catch (error) {
+    console.error("error getting all users");
+    throw error;
+  }
 }
 
 async function getUserById(id) {
@@ -76,76 +76,76 @@ async function getUserById(id) {
 }
 
 async function getUserbyUserName(username) {
-    try {
-        const [userByUserName] = await db.execute(`
+  try {
+    const [userByUserName] = await db.execute(`
         SELECT * 
         FROM users 
         WHERE username = ?; 
       `, [username]);
 
-        if (userByUserName[0]) {
-            console.log("User By UserName:", username, "->", userByUserName);
-            return userByUserName;
-        } else {
-            return "Username is not registered";
-        }
-    } catch (error) {
-        console.error("error getting user by username", error);
-        throw error;
+    if (userByUserName[0]) {
+      console.log("User By UserName:", username, "->", userByUserName);
+      return userByUserName;
+    } else {
+      return "Username is not registered";
     }
+  } catch (error) {
+    console.error("error getting user by username", error);
+    throw error;
+  }
 }
 
 async function getUserbyUserNameOrEmail(username, email) {
-    try {
-        const [userByUserNameOrEmail] = await db.execute(`
+  try {
+    const [userByUserNameOrEmail] = await db.execute(`
       SELECT * 
       FROM users 
       WHERE username = "${username}" 
       OR email = "${email}"; 
     `);
 
-        if (userByUserNameOrEmail[0]) {
-            delete userByUserNameOrEmail[0].password
-            if (userByUserNameOrEmail[1]) {
-                delete userByUserNameOrEmail[1].password
-            }
-            console.log("User By UserName:", username, ", or email:", email, "->", userByUserNameOrEmail)
-            return userByUserNameOrEmail;
-        } else {
-            return ("Username or email ok to use")
-        }
-
-    } catch (error) {
-        console.error("error getting user by username or email");
-        throw error;
+    if (userByUserNameOrEmail[0]) {
+      delete userByUserNameOrEmail[0].password
+      if (userByUserNameOrEmail[1]) {
+        delete userByUserNameOrEmail[1].password
+      }
+      console.log("User By UserName:", username, ", or email:", email, "->", userByUserNameOrEmail)
+      return userByUserNameOrEmail;
+    } else {
+      return ("Username or email ok to use")
     }
+
+  } catch (error) {
+    console.error("error getting user by username or email");
+    throw error;
+  }
 }
 
 async function promoteUserToBuddy(userId) {
-    try {
-        const [results] = await db.execute(`
+  try {
+    const [results] = await db.execute(`
       UPDATE users
       SET is_buddy = TRUE 
       WHERE id = ?
     `, [userId]);
 
-        if (results.changedRows >= 1) {
-            const [updatedUser] = await db.execute(`
+    if (results.changedRows >= 1) {
+      const [updatedUser] = await db.execute(`
         SELECT * 
         FROM users 
         WHERE id = ?; 
       `, [userId]);
 
-            console.log("Promoted User with userId:", userId, "->", updatedUser)
-            return updatedUser[0]; // Return the individual user object
-        } else {
-            console.log("Error promoting user")
-            return "Error promoting user found";
-        }
-    } catch (error) {
-        console.error(error);
-        throw error;
+      console.log("Promoted User with userId:", userId, "->", updatedUser)
+      return updatedUser[0]; // Return the individual user object
+    } else {
+      console.log("Error promoting user")
+      return "Error promoting user found";
     }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 // async function getAllMessages() {
@@ -163,36 +163,43 @@ async function promoteUserToBuddy(userId) {
 // }
 
 async function createMessage(sender_id, receiver_id, message_content) {
-    try {
-        await db.execute(`
+  try {
+    await db.execute(`
       INSERT INTO messages (sender_id, receiver_id, message_content)
       VALUES (?, ?, ?);
     `, [sender_id, receiver_id, message_content]);
 
-        console.log("Message sent successfully");
-    } catch (error) {
-        console.error("Error sending message:");
-        throw error;
-    }
+    console.log("Message sent successfully");
+  } catch (error) {
+    console.error("Error sending message:");
+    throw error;
+  }
 }
 
 async function getMessagesForUser(user_id) {
-    try {
-      const [messages] = await db.execute(`
-        SELECT m.id, m.sender_id, m.receiver_id, m.message_content, m.timestamp, u.username as sender_username, u.name as sender_name
+  try {
+    const [messages] = await db.execute(`
+      SELECT m.id, 
+      m.sender_id, 
+      m.receiver_id, 
+      m.message_content, 
+      m.timestamp, 
+      m.marked_for_deletion,
+      u.username as sender_username, 
+      u.name as sender_name
         FROM messages m
         JOIN users u ON m.sender_id = u.id
         WHERE m.receiver_id = ?
         ORDER BY m.timestamp ASC;
       `, [user_id]);
-  
-      console.log("Messages retrieved successfully", messages);
-      return messages;
-    } catch (error) {
-      console.error("Error retrieving messages");
-      throw error;
-    }
-  }  
+
+    console.log("Messages retrieved successfully", messages);
+    return messages;
+  } catch (error) {
+    console.error("Error retrieving messages");
+    throw error;
+  }
+}
 
 // Mark a message as deleted
 async function markMessageAsDeleted(messageId) {
@@ -243,15 +250,15 @@ async function getDeletedMessagesForUser(user_id) {
 }
 
 module.exports = {
-    getAllUsers,
-    createUser,
-    getUserbyUserNameOrEmail,
-    getUserbyUserName,
-    promoteUserToBuddy,
-    getUserById,
-    createMessage,
-    getMessagesForUser,
-    markMessageAsDeleted,
-    deleteOldMarkedMessages,
-    getDeletedMessagesForUser
+  getAllUsers,
+  createUser,
+  getUserbyUserNameOrEmail,
+  getUserbyUserName,
+  promoteUserToBuddy,
+  getUserById,
+  createMessage,
+  getMessagesForUser,
+  markMessageAsDeleted,
+  deleteOldMarkedMessages,
+  getDeletedMessagesForUser
 };
