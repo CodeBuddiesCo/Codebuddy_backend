@@ -186,7 +186,8 @@ async function getMessagesForUser(user_id) {
       m.timestamp, 
       m.marked_for_deletion,
       u.username as sender_username, 
-      u.name as sender_name
+      u.name as sender_name,
+      u.is_buddy as sender_is_buddy
         FROM messages m
         JOIN users u ON m.sender_id = u.id
         WHERE m.receiver_id = ?
