@@ -212,13 +212,17 @@ usersRouter.get('/users/:id', async (req, res) => {
   
   try {
     const user = await getUserById(userId);
-
+    console.log('User fetched:', user);
+    
     if (user && Object.keys(user).length > 0) {
+      console.log('Sending response', user);
       return res.json(user);
     } else {
+      console.log('User not found');
       return res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
+    console.log('Error:', error);
     return res.status(500).json({ error: 'Error getting user' });
   }
 });
