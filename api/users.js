@@ -209,14 +209,21 @@ usersRouter.get('/users', async (req, res) => {
 // Get a single user by ID
 usersRouter.get('/users/:id', async (req, res) => {
   const userId = req.params.id;
+
+  console.log(`Received user ID: ${userId}`); 
+
   try {
     const user = await getUserById(userId);
+
+    console.log(`Fetched user: ${JSON.stringify(user)}`); 
+
     if (user) {
       res.json(user);
     } else {
       res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
+    console.error(`Error getting user: ${error}`); 
     res.status(500).json({ error: 'Error getting user' });
   }
 });
