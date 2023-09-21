@@ -13,7 +13,9 @@ const {
   getMessagesForUser,
   markMessageAsDeleted,
   deleteOldMarkedMessages,
-  getDeletedMessagesForUser
+  getDeletedMessagesForUser,
+  getUserById,
+  updateUserById
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -191,6 +193,43 @@ usersRouter.get('/deletedMessages/:user_id', async (req, res) => {
     res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get all users
+usersRouter.get('/users', async (req, res) => {
+  try {
+    const allUsers = await getAllUsers();
+    res.json(allUsers);
+  } catch (error) {
+    res.status(500).json({ error: 'Error getting all users' });
+  }
+});
+
+// Get a single user by ID
+usersRouter.get('/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const user = await getUserById(userId);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error getting user' });
+  }
+});
+
+// Update a user by ID
+usersRouter.put('/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  const updatedInfo = req.body;
+  try {
+    await updateUserById(userId, updatedInfo);
+    res.status(200).json({ message: 'User updated successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error updating user' });
   }
 });
 
