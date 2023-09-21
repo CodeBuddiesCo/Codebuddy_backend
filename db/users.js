@@ -55,24 +55,24 @@ async function getAllUsers() {
 }
 
 async function getUserById(id) {
-
   try {
-
-    const [user] = await db.execute(`
-      SELECT *
-      FROM users
-      WHERE id = "${id}";`
-    );
-
-    delete user[0].password
+    console.log(`About to fetch user with id ${id}`);
+    const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
+    console.log("Query executed, rows:", rows);
+    
+    if (rows.length === 0) {
+      console.log(`No user found with id ${id}`);
+      return null;
+    }
+    
+    const user = rows[0];
+    delete user.password;
     console.log("User by Id", id, "->", user);
-    return user[0];
-
+    return user;
   } catch (error) {
     console.error("Error getting user by Id", id);
     throw error;
   }
-
 }
 
 async function getUserbyUserName(username) {
