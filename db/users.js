@@ -250,6 +250,27 @@ async function getDeletedMessagesForUser(user_id) {
   }
 }
 
+// Update user info by ID
+async function updateUserById(userId, updatedInfo) {
+  try {
+    const { name, email, username, pfp_url, primary_language, secondary_language, buddy_bio } = updatedInfo;
+    await db.execute(`
+      UPDATE users SET
+      name = ?,
+      email = ?,
+      username = ?,
+      pfp_url = ?,
+      primary_language = ?,
+      secondary_language = ?,
+      buddy_bio = ?
+      WHERE id = ?
+    `, [name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, userId]);
+  } catch (error) {
+    console.error("Error updating user by ID");
+    throw error;
+  }
+}
+
 module.exports = {
   getAllUsers,
   createUser,
@@ -261,5 +282,6 @@ module.exports = {
   getMessagesForUser,
   markMessageAsDeleted,
   deleteOldMarkedMessages,
-  getDeletedMessagesForUser
+  getDeletedMessagesForUser,
+  updateUserById
 };
