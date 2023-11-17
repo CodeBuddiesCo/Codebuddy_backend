@@ -46,7 +46,13 @@ const createTables = async () => {
         pfp_url VARCHAR(255),
         primary_language VARCHAR(50),
         secondary_language VARCHAR(50),
-        buddy_bio VARCHAR(2500)
+        buddy_bio VARCHAR(2500), 
+        security_question_1 VARCHAR(255),
+        security_answer_1 VARCHAR(255),
+        security_question_2 VARCHAR(255),
+        security_answer_2 VARCHAR(255),
+        security_question_3 VARCHAR(255),
+        security_answer_3 VARCHAR(255)
       );
     `);
 
@@ -104,12 +110,18 @@ const createTables = async () => {
 async function createUser(user) {
   try {
 
-    const { name, email, username, password, is_buddy, isAdmin } = user
+    const { name, email, username, password, is_buddy, isAdmin,
+      security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedAnswer1 = await bcrypt.hash(security_answer_1, saltRounds);
+    const hashedAnswer2 = await bcrypt.hash(security_answer_2, saltRounds);
+    const hashedAnswer3 = await bcrypt.hash(security_answer_3, saltRounds);
     const [results, rows, fields] = await db.execute(`
-      INSERT INTO users (name, email, username, password, is_buddy, isAdmin) 
-      VALUES (?, ?, ?, ?, ?, ?);
-    `, [name, email, username, hashedPassword, is_buddy, isAdmin],
+      INSERT INTO users (name, email, username, password, is_buddy, isAdmin, 
+      security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `, [name, email, username, hashedPassword, is_buddy, isAdmin,
+      security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3],
     );
 
     const [data] = await db.execute(`
@@ -141,7 +153,13 @@ async function seedUserData() {
       username: 'Hollye',
       password: 'ccc123',
       is_buddy: true,
-      isAdmin: true
+      isAdmin: true,
+      security_question_1: 'What is the name of the street where you grew up?',
+      security_answer_1: '123 Street',
+      security_question_2: 'What is the name of the town where you were born?',
+      security_answer_2: 'Example Town',
+      security_question_3: 'What was the make of your first mobile phone?',
+      security_answer_3: 'Nokia'
     },
     {
       name: 'Catherine',
@@ -149,7 +167,13 @@ async function seedUserData() {
       username: 'Catherine',
       password: 'bbb123',
       is_buddy: true,
-      isAdmin: true
+      isAdmin: true,
+      security_question_1: 'What is the name of the street where you grew up?',
+      security_answer_1: '456 Street',
+      security_question_2: 'What is the name of the town where you were born?',
+      security_answer_2: 'New York',
+      security_question_3: 'What was the make of your first mobile phone?',
+      security_answer_3: 'Motorola'
     },
   ];
 

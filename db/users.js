@@ -3,24 +3,18 @@ const bcrypt = require('bcrypt');
 const { createSchedule } = require("./schedules");
 const saltRounds = 10;
 
-
 async function createUser(user) {
   try {
-    const { name, email, username, hashedPassword } = user
-    const [results, rows, fields] = await db.execute(`
-      INSERT INTO users (name, email, username, password) 
-      VALUES (?, ?, ?, ?);
-      `, [name, email, username, hashedPassword],
-    );
+    const { name, email, username, hashedPassword, security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3 } = user;
+    
+    await db.execute(`
+      INSERT INTO users (name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `, [name, email, username, hashedPassword, security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3]);
 
     const [newUser] = await db.execute(`
-      SELECT * 
-      FROM users
-      WHERE username='${username}';`,
-    );
-
-    delete newUser[0].password;
-    console.log("Added User Details ->:", newUser);
+      SELECT id, name, email, username, is_buddy, isAdmin FROM users WHERE username = ?;
+    `, [username]);
 
     const userId = newUser[0].id;
 
@@ -28,7 +22,7 @@ async function createUser(user) {
       await createSchedule(userId);
     }
 
-    return newUser;
+    return newUser[0];  // Return the user object without sensitive data
 
   } catch (error) {
     console.error("error adding users");
@@ -271,6 +265,68 @@ async function updateUserById(userId, updatedInfo) {
   }
 }
 
+// Retrieve security questions
+async function getSecurityQuestions(username) {
+  try {
+    const [user] = await db.execute(`
+      SELECT security_question_1, security_question_2, security_question_3 
+      FROM users 
+      WHERE username = ?;
+    `, [username]);
+
+    if (user.length === 0) {
+      throw new Error('User not found');
+    }
+
+    return user[0];
+  } catch (error) {
+    console.error("Error retrieving security questions:", error);
+    throw error;
+  }
+}
+
+// Verify Security Answers
+async function verifySecurityAnswers(username, answer1, answer2, answer3) {
+  try {
+    const [user] = await db.execute(`
+      SELECT security_answer_1, security_answer_2, security_answer_3 
+      FROM users 
+      WHERE username = ?;
+    `, [username]);
+
+    if (user.length === 0) {
+      throw new Error('User not found');
+    }
+
+    const isAnswer1Correct = await bcrypt.compare(answer1, user[0].security_answer_1);
+    const isAnswer2Correct = await bcrypt.compare(answer2, user[0].security_answer_2);
+    const isAnswer3Correct = await bcrypt.compare(answer3, user[0].security_answer_3);
+
+    return isAnswer1Correct && isAnswer2Correct && isAnswer3Correct;
+  } catch (error) {
+    console.error("Error verifying security answers:", error);
+    throw error;
+  }
+}
+
+// Reset Password
+async function resetPassword(username, newPassword) {
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await db.execute(`
+      UPDATE users 
+      SET password = ? 
+      WHERE username = ?;
+    `, [hashedPassword, username]);
+
+    console.log("Password has been reset successfully");
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getAllUsers,
   createUser,
@@ -283,5 +339,8 @@ module.exports = {
   markMessageAsDeleted,
   deleteOldMarkedMessages,
   getDeletedMessagesForUser,
-  updateUserById
+  updateUserById,
+  getSecurityQuestions,
+  verifySecurityAnswers,
+  resetPassword
 };

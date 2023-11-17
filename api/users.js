@@ -15,15 +15,21 @@ const {
   deleteOldMarkedMessages,
   getDeletedMessagesForUser,
   getUserById,
-  updateUserById
+  updateUserById,
+  getSecurityQuestions,
+  verifySecurityAnswers,
+  resetPassword
 } = require('../db/users');
 
 const usersRouter = express.Router();
 
 usersRouter.post('/register', async (req, res) => {
-  const { name, email, username, password } = req.body;
+  const { name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = req.body;
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
+  const hashedAnswer1 = await bcrypt.hash(security_answer_1, saltRounds);
+  const hashedAnswer2 = await bcrypt.hash(security_answer_2, saltRounds);
+  const hashedAnswer3 = await bcrypt.hash(security_answer_3, saltRounds);
 
   try {
 
@@ -40,22 +46,28 @@ usersRouter.post('/register', async (req, res) => {
       return res.status(400).send(`${username} or ${email} is already in use.`);
     }
 
-    const [newUser] = await createUser({
+    const newUser = await createUser({
       name,
       email,
       username,
       hashedPassword,
+      security_question_1,
+      security_answer_1: hashedAnswer1,
+      security_question_2,
+      security_answer_2: hashedAnswer2,
+      security_question_3,
+      security_answer_3: hashedAnswer3
     });
     console.log(newUser)
 
-    const token = jwt.sign(newUser, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: newUser.id, isAdmin: newUser.isAdmin }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
     console.log("New user token ->", token)
     res.send({
       message: "Thank you for registering.",
       token,
-      user: newUser,
+      user: { id: newUser.id, username: newUser.username, email: newUser.email, name: newUser.name } // Don't send back sensitive data
     });
 
   } catch (error) {
@@ -236,6 +248,45 @@ usersRouter.put('/users/:id', async (req, res) => {
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Error updating user' });
+  }
+});
+
+// Retrieve security questions
+usersRouter.get('/security-questions/:username', async (req, res) => {
+  try {
+    const username = req.params.username;
+    const questions = await getSecurityQuestions(username);
+    res.status(200).json(questions);
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving security questions' });
+  }
+});
+
+// Verify answers
+usersRouter.post('/verify-answers', async (req, res) => {
+  const { username, answer1, answer2, answer3 } = req.body;
+
+  try {
+    const isVerified = await verifySecurityAnswers(username, answer1, answer2, answer3);
+    if (isVerified) {
+      res.status(200).json({ verified: true });
+    } else {
+      res.status(401).json({ verified: false });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error verifying answers' });
+  }
+});
+
+// Reset password
+usersRouter.post('/reset-password', async (req, res) => {
+  const { username, newPassword } = req.body;
+
+  try {
+    await resetPassword(username, newPassword);
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error resetting password' });
   }
 });
 

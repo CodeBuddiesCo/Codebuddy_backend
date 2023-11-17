@@ -31,6 +31,18 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+function generateResetToken(userEmail) {
+  const payload = {
+    email: userEmail,
+  };
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: '10m',
+  });
+
+  return token;
+}
+
 function validateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer token
@@ -54,6 +66,6 @@ module.exports = {
   requireUser,
   requireAdmin,
   validateToken,
-  requireBuddy
+  requireBuddy,
+  generateResetToken,
 }
-
