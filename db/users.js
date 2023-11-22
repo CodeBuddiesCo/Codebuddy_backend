@@ -5,8 +5,14 @@ const saltRounds = 10;
 
 async function createUser(user) {
   try {
-    const { name, email, username, hashedPassword, security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3 } = user;
-    
+    const { name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user;
+
+    // Hash the password and security answers inside the createUser function
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedAnswer1 = security_answer_1 ? await bcrypt.hash(security_answer_1, 10) : null;
+    const hashedAnswer2 = security_answer_2 ? await bcrypt.hash(security_answer_2, 10) : null;
+    const hashedAnswer3 = security_answer_3 ? await bcrypt.hash(security_answer_3, 10) : null;
+
     await db.execute(`
       INSERT INTO users (name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
