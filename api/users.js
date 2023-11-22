@@ -25,14 +25,8 @@ const usersRouter = express.Router();
 
 usersRouter.post('/register', async (req, res) => {
   const { name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = req.body;
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const hashedAnswer1 = await bcrypt.hash(security_answer_1, saltRounds);
-  const hashedAnswer2 = await bcrypt.hash(security_answer_2, saltRounds);
-  const hashedAnswer3 = await bcrypt.hash(security_answer_3, saltRounds);
 
   try {
-
     if (password.length < 6) {
       console.error("Provided Password does not meet requirements");
       return res.status(400).send('Password is too short');
@@ -50,13 +44,13 @@ usersRouter.post('/register', async (req, res) => {
       name,
       email,
       username,
-      hashedPassword,
+      password, // Pass the unhashed password
       security_question_1,
-      security_answer_1: hashedAnswer1,
+      security_answer_1, // Pass the unhashed security answers
       security_question_2,
-      security_answer_2: hashedAnswer2,
+      security_answer_2,
       security_question_3,
-      security_answer_3: hashedAnswer3
+      security_answer_3
     });
     console.log(newUser)
 
@@ -67,7 +61,7 @@ usersRouter.post('/register', async (req, res) => {
     res.send({
       message: "Thank you for registering.",
       token,
-      user: { id: newUser.id, username: newUser.username, email: newUser.email, name: newUser.name } // Don't send back sensitive data
+      user: { id: newUser.id, username: newUser.username, email: newUser.email, name: newUser.name }
     });
 
   } catch (error) {
