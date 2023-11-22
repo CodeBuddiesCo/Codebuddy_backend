@@ -5,7 +5,8 @@ const saltRounds = 10;
 
 async function createUser(user) {
   try {
-    const { name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user;
+    const { name, email, username, password, 
+      security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user;
 
     // Hash the password and security answers inside the createUser function
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -28,7 +29,7 @@ async function createUser(user) {
       await createSchedule(userId);
     }
 
-    return newUser[0];  // Return the user object without sensitive data
+    return newUser[0];
 
   } catch (error) {
     console.error("error adding users");
@@ -299,6 +300,13 @@ async function verifySecurityAnswers(username, answer1, answer2, answer3) {
       FROM users 
       WHERE username = ?;
     `, [username]);
+    console.log('Provided answers:', { answer1, answer2, answer3 });
+console.log('Hashed answers from DB:', {
+  security_answer_1: user[0].security_answer_1,
+  security_answer_2: user[0].security_answer_2,
+  security_answer_3: user[0].security_answer_3,
+});
+
 
     if (user.length === 0) {
       throw new Error('User not found');
@@ -307,7 +315,12 @@ async function verifySecurityAnswers(username, answer1, answer2, answer3) {
     const isAnswer1Correct = await bcrypt.compare(answer1, user[0].security_answer_1);
     const isAnswer2Correct = await bcrypt.compare(answer2, user[0].security_answer_2);
     const isAnswer3Correct = await bcrypt.compare(answer3, user[0].security_answer_3);
-
+    if (!answer1 || !user[0].security_answer_1 || 
+      !answer2 || !user[0].security_answer_2 || 
+      !answer3 || !user[0].security_answer_3) {
+    throw new Error('Invalid answer or security answer not set');
+  }
+  
     return isAnswer1Correct && isAnswer2Correct && isAnswer3Correct;
   } catch (error) {
     console.error("Error verifying security answers:", error);

@@ -274,12 +274,25 @@ usersRouter.post('/verify-answers', async (req, res) => {
 
 // Reset password
 usersRouter.post('/reset-password', async (req, res) => {
-  const { username, newPassword } = req.body;
+  const { username, newPassword, answer1, answer2, answer3 } = req.body;
 
   try {
+    // Ensure all required fields are provided
+    if (!username || !newPassword || !answer1 || !answer2 || !answer3) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    // Verify security answers
+    const isVerified = await verifySecurityAnswers(username, answer1, answer2, answer3);
+    if (!isVerified) {
+      return res.status(401).json({ error: 'Security answers do not match' });
+    }
+
+    // Proceed with password reset
     await resetPassword(username, newPassword);
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error resetting password' });
   }
 });
