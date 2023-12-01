@@ -18,7 +18,8 @@ const {
   updateUserById,
   getSecurityQuestions,
   verifySecurityAnswers,
-  resetPassword
+  resetPassword,
+  updateSecurityQuestionsAndAnswers
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -215,11 +216,11 @@ usersRouter.get('/users', async (req, res) => {
 // Get a single user by ID
 usersRouter.get('/users/:id', async (req, res) => {
   const userId = req.params.id;
-  
+
   try {
     const user = await getUserById(userId);
     console.log('User fetched:', user);
-    
+
     if (user && Object.keys(user).length > 0) {
       console.log('Sending response', user);
       return res.json(user);
@@ -294,6 +295,31 @@ usersRouter.post('/reset-password', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error resetting password' });
+  }
+});
+
+// Update security questions and answers
+usersRouter.put('/update-security/:id', async (req, res) => {
+  const userId = req.params.id;
+  const { security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = req.body;
+
+  try {
+    // Ensure all required fields are provided
+    if (!security_question_1 || !security_answer_1 || !security_question_2 || !security_answer_2 || !security_question_3 || !security_answer_3) {
+      return res.status(400).json({ error: 'All security questions and answers are required' });
+    }
+
+    // Update security questions and answers in the database
+    const wasUpdated = await updateSecurityQuestionsAndAnswers(userId, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3);
+
+    if (wasUpdated) {
+      res.status(200).json({ message: 'Security questions and answers updated successfully' });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error updating security questions and answers' });
   }
 });
 

@@ -5,7 +5,7 @@ const saltRounds = 10;
 
 async function createUser(user) {
   try {
-    const { name, email, username, password, 
+    const { name, email, username, password,
       security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user;
 
     // Hash the password and security answers inside the createUser function
@@ -60,12 +60,12 @@ async function getUserById(id) {
     console.log(`About to fetch user with id ${id}`);
     const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
     console.log("Query executed, rows:", rows);
-    
+
     if (rows.length === 0) {
       console.log(`No user found with id ${id}`);
       return null;
     }
-    
+
     const user = rows[0];
     delete user.password;
     console.log("User by Id", id, "->", user);
@@ -301,12 +301,11 @@ async function verifySecurityAnswers(username, answer1, answer2, answer3) {
       WHERE username = ?;
     `, [username]);
     console.log('Provided answers:', { answer1, answer2, answer3 });
-console.log('Hashed answers from DB:', {
-  security_answer_1: user[0].security_answer_1,
-  security_answer_2: user[0].security_answer_2,
-  security_answer_3: user[0].security_answer_3,
-});
-
+    console.log('Hashed answers from DB:', {
+      security_answer_1: user[0].security_answer_1,
+      security_answer_2: user[0].security_answer_2,
+      security_answer_3: user[0].security_answer_3,
+    });
 
     if (user.length === 0) {
       throw new Error('User not found');
@@ -315,12 +314,12 @@ console.log('Hashed answers from DB:', {
     const isAnswer1Correct = await bcrypt.compare(answer1, user[0].security_answer_1);
     const isAnswer2Correct = await bcrypt.compare(answer2, user[0].security_answer_2);
     const isAnswer3Correct = await bcrypt.compare(answer3, user[0].security_answer_3);
-    if (!answer1 || !user[0].security_answer_1 || 
-      !answer2 || !user[0].security_answer_2 || 
+    if (!answer1 || !user[0].security_answer_1 ||
+      !answer2 || !user[0].security_answer_2 ||
       !answer3 || !user[0].security_answer_3) {
-    throw new Error('Invalid answer or security answer not set');
-  }
-  
+      throw new Error('Invalid answer or security answer not set');
+    }
+
     return isAnswer1Correct && isAnswer2Correct && isAnswer3Correct;
   } catch (error) {
     console.error("Error verifying security answers:", error);
@@ -346,6 +345,36 @@ async function resetPassword(username, newPassword) {
   }
 }
 
+async function updateSecurityQuestionsAndAnswers(userId, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) {
+  try {
+    const hashedAnswer1 = security_answer_1 ? await bcrypt.hash(security_answer_1, saltRounds) : null;
+    const hashedAnswer2 = security_answer_2 ? await bcrypt.hash(security_answer_2, saltRounds) : null;
+    const hashedAnswer3 = security_answer_3 ? await bcrypt.hash(security_answer_3, saltRounds) : null;
+
+    const [result] = await db.execute(`
+      UPDATE users 
+      SET security_question_1 = ?, security_answer_1 = ?,
+          security_question_2 = ?, security_answer_2 = ?,
+          security_question_3 = ?, security_answer_3 = ?
+      WHERE id = ?;
+    `, [security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3, userId]);
+
+    console.log("Attempted to update security questions and answers for user ID:", userId);
+
+    // Check if the query actually updated any rows
+    if (result.affectedRows > 0) {
+      console.log("Security questions and answers updated successfully for user ID:", userId);
+      return true; // Indicates successful update
+    } else {
+      console.log("No user found with ID:", userId);
+      return false; // Indicates no user was found/updated
+    }
+  } catch (error) {
+    console.error("Error updating security questions and answers:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getAllUsers,
   createUser,
@@ -361,5 +390,6 @@ module.exports = {
   updateUserById,
   getSecurityQuestions,
   verifySecurityAnswers,
-  resetPassword
+  resetPassword,
+  updateSecurityQuestionsAndAnswers
 };
