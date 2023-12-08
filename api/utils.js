@@ -15,7 +15,7 @@ function requireBuddy(req, res, next) {
   if (!req.user.is_buddy) {
     return res.status(401).json({
       name: "UnauthorizedError",
-      message: "You must be a buddy to create an event",
+      message: "You must be a buddy for this request",
     });
   }
   next();
@@ -25,7 +25,7 @@ const requireAdmin = (req, res, next) => {
   if (!req.user || !req.user.isAdmin) {
     return next({
       name: "UnauthorizedError",
-      message: "You must be an admin to access this resource",
+      message: "You must be an admin for this request",
     });
   }
   next();
