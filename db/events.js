@@ -97,7 +97,8 @@ async function getAllEvents() {
 
     const [events] = await db.execute(`
       SELECT *
-      FROM events;`
+      FROM events
+      WHERE is_active = true;`
     );
 
     events.map(event => eventIdArray.push(event.id))
@@ -131,7 +132,7 @@ async function getAllFutureEvents() {
     const [events] = await db.execute(`
       SELECT *
       FROM events
-      WHERE date_time > "${date}";`
+      WHERE date_time > "${date}" AND is_active = true;`
     );
     
     events.map(event => eventIdArray.push(event.id))
