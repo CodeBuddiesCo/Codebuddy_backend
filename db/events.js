@@ -292,7 +292,7 @@ async function cancelEvent(eventId){
 
 
     console.log("Cancelled Event ->", cancelledEvent);
-    return;
+    return cancelledEvent;
 
   } catch (error) {
     console.error("DB error cancelling event");
