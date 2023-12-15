@@ -373,11 +373,11 @@ async function deleteEvent(eventId){
     if (results.affectedRows === 1) {
 
       console.log("Success deleting event with eventId", eventId);
-      return("Success deleting event");
+      return({message: "Success deleting event"});
 
     } else {
       console.error("Error deleting event with eventId", eventId)
-      return("Error deleting event")
+      return({message: "Error deleting event"})
     }
 
   } catch (error) {
