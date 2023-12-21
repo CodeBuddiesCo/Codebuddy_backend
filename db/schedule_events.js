@@ -322,8 +322,6 @@ async function secondBuddyCancelSignUp(eventId, buddyUserName) {
   }
 } 
 
-secondBuddySignUp(77, "hollye")
-
 module.exports = {
   addEventToSchedule,
   addBuddyEventToBuddySchedule,
