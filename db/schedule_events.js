@@ -191,13 +191,17 @@ async function removeEventFromSchedule(scheduleId, eventId) {
 // * API second Buddy sign up - after the fact - Updates the event to fill second spot and adds to list of attendees
 async function secondBuddySignUp(eventId, buddyUserName) {
   try {
+    
+    const buddyToAddEventTo = await getUserbyUserName(buddyUserName);
+    const username = buddyToAddEventTo[0].username
+
     const requestedEvent = await getEventById(eventId);
-    if (requestedEvent[0].buddy_two === "open" && requestedEvent[0].buddy_one !== buddyUserName) {
+    if (requestedEvent[0].buddy_two === "open" && requestedEvent[0].buddy_one !== username) {
 
       await db.execute(
         `
           UPDATE events 
-          SET buddy_two = "${buddyUserName}"
+          SET buddy_two = "${username}"
           WHERE id = "${eventId}";` 
       );
 
@@ -211,13 +215,11 @@ async function secondBuddySignUp(eventId, buddyUserName) {
   
       console.log("Successfully updated event with second Buddy ->", updatedEvent); 
 
-      const buddyToAddEventTo = await getUserbyUserName(buddyUserName);
-
       if (buddyToAddEventTo){
 
         const buddyIdToAddEventTo = buddyToAddEventTo[0].id;
         const buddyScheduleToAddEventTo = await getScheduleByUserId(buddyIdToAddEventTo);
-        const buddyScheduleIdToAddEventTo = buddyScheduleToAddEventTo[0].id;
+        const buddyScheduleIdToAddEventTo = buddyScheduleToAddEventTo.id;
   
         if (buddyScheduleIdToAddEventTo) {
 
@@ -319,6 +321,8 @@ async function secondBuddyCancelSignUp(eventId, buddyUserName) {
     throw error;
   }
 } 
+
+secondBuddySignUp(77, "hollye")
 
 module.exports = {
   addEventToSchedule,
