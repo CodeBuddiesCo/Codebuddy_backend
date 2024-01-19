@@ -25,7 +25,10 @@ const {
 const usersRouter = express.Router();
 
 usersRouter.post('/register', async (req, res) => {
-  const { name, email, username, password, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = req.body;
+  const { name, email, username, password, 
+    security_question_1, security_answer_1, 
+    security_question_2, security_answer_2, 
+    security_question_3, security_answer_3 } = req.body;
 
   try {
     if (password.length < 6) {
@@ -214,7 +217,7 @@ usersRouter.get('/users', async (req, res) => {
 });
 
 // Get a single user by ID
-usersRouter.get('/users/:id', async (req, res) => {
+usersRouter.get('/:id', async (req, res) => {
   const userId = req.params.id;
 
   try {
@@ -235,7 +238,7 @@ usersRouter.get('/users/:id', async (req, res) => {
 });
 
 // Update a user by ID
-usersRouter.put('/users/:id', async (req, res) => {
+usersRouter.put('/:id', async (req, res) => {
   const userId = req.params.id;
   const updatedInfo = req.body;
   try {
