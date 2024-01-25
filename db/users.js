@@ -76,9 +76,6 @@ async function getUserById(id) {
   }
 }
 
-
-
-
 async function getUserbyUserName(username) {
   try {
     const [userByUserName] = await db.execute(`
@@ -145,6 +142,33 @@ async function promoteUserToBuddy(userId) {
     } else {
       console.log("Error promoting user")
       return "Error promoting user found";
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+async function demoteUserFromBuddy(userId) {
+  try {
+    const [results] = await db.execute(`
+      UPDATE users
+      SET is_buddy = FALSE 
+      WHERE id = ?
+    `, [userId]);
+
+    if (results.changedRows >= 1) {
+      const [updatedUser] = await db.execute(`
+        SELECT * 
+        FROM users 
+        WHERE id = ?; 
+      `, [userId]);
+
+      console.log("Demoted User with userId:", userId, "->", updatedUser)
+      return updatedUser[0]; // Return the individual user object
+    } else {
+      console.log("Error demoting user")
+      return "Error demoting user found";
     }
   } catch (error) {
     console.error(error);
@@ -394,5 +418,6 @@ module.exports = {
   getSecurityQuestions,
   verifySecurityAnswers,
   resetPassword,
-  updateSecurityQuestionsAndAnswers
+  updateSecurityQuestionsAndAnswers,
+  demoteUserFromBuddy
 };
