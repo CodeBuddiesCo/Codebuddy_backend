@@ -19,11 +19,13 @@ const {
   getSecurityQuestions,
   verifySecurityAnswers,
   resetPassword,
-  updateSecurityQuestionsAndAnswers
+  updateSecurityQuestionsAndAnswers,
+  demoteUserFromBuddy
 } = require('../db/users');
 
 const usersRouter = express.Router();
 
+//Register
 usersRouter.post('/register', async (req, res) => {
   const { name, email, username, password, 
     security_question_1, security_answer_1, 
@@ -48,9 +50,9 @@ usersRouter.post('/register', async (req, res) => {
       name,
       email,
       username,
-      password, // Pass the unhashed password
+      password, 
       security_question_1,
-      security_answer_1, // Pass the unhashed security answers
+      security_answer_1,
       security_question_2,
       security_answer_2,
       security_question_3,
@@ -74,6 +76,8 @@ usersRouter.post('/register', async (req, res) => {
   }
 });
 
+
+//Login
 usersRouter.post('/login', async function (req, res) {
   const { username, password } = req.body;
 
@@ -128,6 +132,8 @@ usersRouter.post('/login', async function (req, res) {
   }
 });
 
+
+//Promote user to buddy
 usersRouter.put('/promote/:id', validateToken, requireUser, requireAdmin, async (req, res) => {
   const userId = req.params.id;
 
@@ -144,10 +150,29 @@ usersRouter.put('/promote/:id', validateToken, requireUser, requireAdmin, async 
   }
 });
 
+//Demote user from buddy
+usersRouter.put('/demote/:id', validateToken, requireUser, requireAdmin, async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const demotedUser = await demoteUserFromBuddy(userId);
+
+    if (!demotedUser.is_buddy) {
+      res.send('User successfully demoted from buddy');
+    } else {
+      res.status(400).send('Error while demoting user');
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send('Internal server error while demoting user');
+  }
+});
+
+//Send message
 usersRouter.post('/message', async (req, res) => {
   const { sender_id, receiver_username, message_content } = req.body;
   try {
-    // Get receiver ID from username
     const [receiver] = await getUserbyUserName(receiver_username);
     if (!receiver) {
       return res.status(404).json({ success: false, error: 'Receiver not found' });
@@ -162,6 +187,7 @@ usersRouter.post('/message', async (req, res) => {
   }
 });
 
+//Receive messages
 usersRouter.get('/messages/:user_id', async (req, res) => {
   try {
     const user_id = req.params.user_id;
@@ -292,7 +318,7 @@ usersRouter.post('/reset-password', async (req, res) => {
       return res.status(401).json({ error: 'Security answers do not match' });
     }
 
-    // Proceed with password reset
+    // Proceed with password resetgit stat
     await resetPassword(username, newPassword);
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
