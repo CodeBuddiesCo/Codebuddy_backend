@@ -281,7 +281,17 @@ async function getDeletedMessagesForUser(user_id) {
 // Update user info by ID
 async function updateUserById(userId, updatedInfo) {
   try {
-    const { name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, title } = updatedInfo;
+    const {
+      name = null,
+      email = null,
+      username = null,
+      pfp_url = null,
+      primary_language = null,
+      secondary_language = null,
+      buddy_bio = null,
+      title = null
+    } = updatedInfo;
+
     await db.execute(`
       UPDATE users SET
       name = ?,
