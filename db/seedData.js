@@ -44,6 +44,7 @@ const createTables = async () => {
         username VARCHAR(50) UNIQUE NOT NULL,
         password VARCHAR(100) NOT NULL,
         pfp_url VARCHAR(255),
+        title VARCHAR(255),
         primary_language VARCHAR(50),
         secondary_language VARCHAR(50),
         buddy_bio VARCHAR(2500), 
