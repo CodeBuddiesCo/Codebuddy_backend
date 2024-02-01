@@ -295,7 +295,7 @@ async function updateUserById(userId, updatedInfo) {
       WHERE id = ?
     `, [name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, title, userId]);
   } catch (error) {
-    console.error("Error updating user by ID");
+    console.error("Error updating user by ID:", error.message);
     throw error;
   }
 }
