@@ -76,7 +76,6 @@ usersRouter.post('/register', async (req, res) => {
   }
 });
 
-
 //Login
 usersRouter.post('/login', async function (req, res) {
   const { username, password } = req.body;
@@ -267,6 +266,7 @@ usersRouter.get('/:id', async (req, res) => {
 usersRouter.put('/:id', async (req, res) => {
   const userId = req.params.id;
   const updatedInfo = req.body;
+  
   try {
     await updateUserById(userId, updatedInfo);
     res.status(200).json({ message: 'User updated successfully' });

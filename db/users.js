@@ -281,7 +281,7 @@ async function getDeletedMessagesForUser(user_id) {
 // Update user info by ID
 async function updateUserById(userId, updatedInfo) {
   try {
-    const { name, email, username, pfp_url, primary_language, secondary_language, buddy_bio } = updatedInfo;
+    const { name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, title } = updatedInfo;
     await db.execute(`
       UPDATE users SET
       name = ?,
@@ -290,9 +290,10 @@ async function updateUserById(userId, updatedInfo) {
       pfp_url = ?,
       primary_language = ?,
       secondary_language = ?,
-      buddy_bio = ?
+      buddy_bio = ?,
+      title = ?
       WHERE id = ?
-    `, [name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, userId]);
+    `, [name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, title, userId]);
   } catch (error) {
     console.error("Error updating user by ID");
     throw error;
@@ -388,13 +389,12 @@ async function updateSecurityQuestionsAndAnswers(userId, security_question_1, se
 
     console.log("Attempted to update security questions and answers for user ID:", userId);
 
-    // Check if the query actually updated any rows
     if (result.affectedRows > 0) {
       console.log("Security questions and answers updated successfully for user ID:", userId);
-      return true; // Indicates successful update
+      return true;
     } else {
       console.log("No user found with ID:", userId);
-      return false; // Indicates no user was found/updated
+      return false;
     }
   } catch (error) {
     console.error("Error updating security questions and answers:", error);
@@ -419,5 +419,5 @@ module.exports = {
   verifySecurityAnswers,
   resetPassword,
   updateSecurityQuestionsAndAnswers,
-  demoteUserFromBuddy
+  demoteUserFromBuddy,
 };
