@@ -281,29 +281,24 @@ async function getDeletedMessagesForUser(user_id) {
 // Update user info by ID
 async function updateUserById(userId, updatedInfo) {
   try {
-    const {
-      name = null,
-      email = null,
-      username = null,
-      pfp_url = null,
-      primary_language = null,
-      secondary_language = null,
-      buddy_bio = null,
-      title = null
-    } = updatedInfo;
+    // Filter out null or undefined fields from updatedInfo
+    const entries = Object.entries(updatedInfo).filter(([_, value]) => value != null);
 
-    await db.execute(`
-      UPDATE users SET
-      name = ?,
-      email = ?,
-      username = ?,
-      pfp_url = ?,
-      primary_language = ?,
-      secondary_language = ?,
-      buddy_bio = ?,
-      title = ?
-      WHERE id = ?
-    `, [name, email, username, pfp_url, primary_language, secondary_language, buddy_bio, title, userId]);
+    // Construct the SET part of the SQL query dynamically based on provided fields
+    const setClause = entries.map(([key]) => `${key} = ?`).join(', ');
+    const values = entries.map(([_, value]) => value);
+
+    // Ensure we have at least one field to update
+    if (entries.length === 0) {
+      throw new Error("No valid fields provided for update");
+    }
+
+    // Append userId to the values array for the WHERE clause
+    values.push(userId);
+
+    const query = `UPDATE users SET ${setClause} WHERE id = ?`;
+
+    await db.execute(query, values);
   } catch (error) {
     console.error("Error updating user by ID:", error.message);
     throw error;
