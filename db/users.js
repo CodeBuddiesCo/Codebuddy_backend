@@ -279,28 +279,30 @@ async function getDeletedMessagesForUser(user_id) {
 }
 
 // Update user info by ID
-async function updateUserById(userId, updatedInfo) {
+async function updateUserById(userId, updatedInfo, programmingLanguages = null) {
   try {
-    // Filter out null or undefined fields from updatedInfo
-    const entries = Object.entries(updatedInfo).filter(([_, value]) => value != null);
+    if (Object.keys(updatedInfo).length > 0) {
+      const entries = Object.entries(updatedInfo).filter(([_, value]) => value != null);
+      const setClause = entries.map(([key]) => `${key} = ?`).join(', ');
+      const values = entries.map(([_, value]) => value);
 
-    // Construct the SET part of the SQL query dynamically based on provided fields
-    const setClause = entries.map(([key]) => `${key} = ?`).join(', ');
-    const values = entries.map(([_, value]) => value);
-
-    // Ensure we have at least one field to update
-    if (entries.length === 0) {
-      throw new Error("No valid fields provided for update");
+      if (entries.length > 0) {
+        const query = `UPDATE users SET ${setClause} WHERE id = ?`;
+        await db.execute(query, [...values, userId]);
+      }
     }
 
-    // Append userId to the values array for the WHERE clause
-    values.push(userId);
+    if (programmingLanguages) {
+      await db.execute('DELETE FROM user_languages WHERE user_id = ?', [userId]);
 
-    const query = `UPDATE users SET ${setClause} WHERE id = ?`;
+      for (const language of programmingLanguages) {
+        await db.execute('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
+      }
+    }
 
-    await db.execute(query, values);
+    console.log("User and programming languages updated successfully for user ID:", userId);
   } catch (error) {
-    console.error("Error updating user by ID:", error.message);
+    console.error("Error updating user by ID and programming languages:", error);
     throw error;
   }
 }
@@ -378,6 +380,7 @@ async function resetPassword(username, newPassword) {
   }
 }
 
+// Update Security Questions
 async function updateSecurityQuestionsAndAnswers(userId, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) {
   try {
     const hashedAnswer1 = security_answer_1 ? await bcrypt.hash(security_answer_1, saltRounds) : null;
@@ -406,6 +409,9 @@ async function updateSecurityQuestionsAndAnswers(userId, security_question_1, se
     throw error;
   }
 }
+
+// Update Languages
+
 
 module.exports = {
   getAllUsers,

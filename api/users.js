@@ -131,7 +131,6 @@ usersRouter.post('/login', async function (req, res) {
   }
 });
 
-
 //Promote user to buddy
 usersRouter.put('/promote/:id', validateToken, requireUser, requireAdmin, async (req, res) => {
   const userId = req.params.id;
@@ -265,12 +264,13 @@ usersRouter.get('/:id', async (req, res) => {
 // Update a user by ID
 usersRouter.put('/:id', async (req, res) => {
   const userId = req.params.id;
-  const updatedInfo = req.body;
+  const { programmingLanguages, ...updatedInfo } = req.body;
   
   try {
-    await updateUserById(userId, updatedInfo);
+    await updateUserById(userId, updatedInfo, programmingLanguages);
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error updating user' });
   }
 });
