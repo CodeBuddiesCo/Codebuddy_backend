@@ -101,6 +101,15 @@ const createTables = async () => {
     );
   `);
 
+  await db.query(`
+  CREATE TABLE user_languages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    programming_language VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+`);
+
     console.log("created Tables");
   } catch (error) {
     console.error("error creating tables")
@@ -108,39 +117,49 @@ const createTables = async () => {
   }
 }
 
-async function createUser(user) {
+async function createUser(user, programmingLanguages) {
   try {
-
     const { name, email, username, password, is_buddy, isAdmin,
-      security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user
+      security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user;
+
+    // Hashing password and security answers
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const hashedAnswer1 = await bcrypt.hash(security_answer_1, saltRounds);
     const hashedAnswer2 = await bcrypt.hash(security_answer_2, saltRounds);
     const hashedAnswer3 = await bcrypt.hash(security_answer_3, saltRounds);
-    const [results, rows, fields] = await db.execute(`
+
+    // Inserting the user into the users table
+    await db.execute(`
       INSERT INTO users (name, email, username, password, is_buddy, isAdmin, 
       security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `, [name, email, username, hashedPassword, is_buddy, isAdmin,
-      security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3],
-    );
+      security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3]);
 
+    // Fetching the newly created user's ID
     const [data] = await db.execute(`
-      SELECT * 
+      SELECT id
       FROM users
-      WHERE username='${username}';`,
-    );
+      WHERE username = ?;`, [username]);
 
     const userId = data[0].id;
 
+    // Check if userId is available and then proceed with additional operations
     if (userId) {
-      await createSchedule(userId);
+      // Inserting programming languages for the user
+      for (const language of programmingLanguages) {
+        await db.execute(`
+          INSERT INTO user_languages (user_id, programming_language)
+          VALUES (?, ?);
+        `, [userId, language]);
+      }
+      await createSchedule(userId); // Assuming this function creates an initial schedule for the user
     }
-    delete data[0].password
-    console.log("Added User Details ->:", data);
+
+    console.log("Added User and Programming Languages ->:", userId);
 
   } catch (error) {
-    console.error("error adding users");
+    console.error("Error adding user and programming languages:", error);
     throw error;
   }
 }
@@ -160,7 +179,8 @@ async function seedUserData() {
       security_question_2: 'What is the name of the town where you were born?',
       security_answer_2: 'Example Town',
       security_question_3: 'What was the make of your first mobile phone?',
-      security_answer_3: 'Nokia'
+      security_answer_3: 'Nokia',
+      programmingLanguages: ['JavaScript', 'HTML', 'CSS']
     },
     {
       name: 'Catherine',
@@ -174,7 +194,8 @@ async function seedUserData() {
       security_question_2: 'What is the name of the town where you were born?',
       security_answer_2: 'New York',
       security_question_3: 'What was the make of your first mobile phone?',
-      security_answer_3: 'Motorola'
+      security_answer_3: 'Motorola',
+      programmingLanguages: ['JavaScript', 'HTML', 'CSS']
     },
   ];
 
