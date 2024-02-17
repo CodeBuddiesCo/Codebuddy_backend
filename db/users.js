@@ -312,10 +312,8 @@ async function updateUserProgrammingLanguages(userId, programmingLanguages) {
   try {
     await connection.beginTransaction();
     
-    // Delete existing programming languages for the user
     await connection.query('DELETE FROM user_languages WHERE user_id = ?', [userId]);
     
-    // Insert new programming languages
     for (const language of programmingLanguages) {
       await connection.query('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
     }
@@ -323,7 +321,7 @@ async function updateUserProgrammingLanguages(userId, programmingLanguages) {
     await connection.commit();
   } catch (error) {
     await connection.rollback();
-    throw error; // Rethrow after rollback for the caller to handle
+    throw error;
   } finally {
     connection.release();
   }
