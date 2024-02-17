@@ -58,16 +58,28 @@ async function getAllUsers() {
 async function getUserById(id) {
   try {
     console.log(`About to fetch user with id ${id}`);
-    const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
-    console.log("Query executed, rows:", rows);
+    // Fetch the user details
+    const [userRows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
 
-    if (rows.length === 0) {
+    if (userRows.length === 0) {
       console.log(`No user found with id ${id}`);
       return null;
     }
 
-    const user = rows[0];
-    delete user.password;
+    const user = userRows[0];
+    delete user.password; // Remove sensitive information
+
+    // Now, fetch the programming languages associated with the user
+    const [languageRows] = await db.execute("SELECT programming_language FROM user_languages WHERE user_id = ?", [id]);
+    console.log("Programming languages fetched for user:", languageRows);
+
+    // Map the result to an array of programming languages
+    const programmingLanguages = languageRows.map(row => row.programming_language);
+    console.log("Programming languages for user by Id", id, "->", programmingLanguages);
+
+    // Include the programming languages in the user object
+    user.programmingLanguages = programmingLanguages;
+
     console.log("User by Id", id, "->", user);
     return user;
   } catch (error) {
@@ -312,10 +324,8 @@ async function updateUserProgrammingLanguages(userId, programmingLanguages) {
   try {
     await connection.beginTransaction();
     
-    // Delete existing programming languages for the user
     await connection.query('DELETE FROM user_languages WHERE user_id = ?', [userId]);
     
-    // Insert new programming languages
     for (const language of programmingLanguages) {
       await connection.query('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
     }
@@ -323,7 +333,7 @@ async function updateUserProgrammingLanguages(userId, programmingLanguages) {
     await connection.commit();
   } catch (error) {
     await connection.rollback();
-    throw error; // Rethrow after rollback for the caller to handle
+    throw error;
   } finally {
     connection.release();
   }
