@@ -16,11 +16,12 @@ const {
   getDeletedMessagesForUser,
   getUserById,
   updateUserById,
+  updateUserProgrammingLanguages,
   getSecurityQuestions,
   verifySecurityAnswers,
   resetPassword,
   updateSecurityQuestionsAndAnswers,
-  demoteUserFromBuddy
+  demoteUserFromBuddy,
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -267,7 +268,13 @@ usersRouter.put('/:id', async (req, res) => {
   const { programmingLanguages, ...updatedInfo } = req.body;
   
   try {
-    await updateUserById(userId, updatedInfo, programmingLanguages);
+     // Update general user information
+     await updateUserById(userId, updatedInfo);
+    
+     // Update programming languages if provided
+     if (programmingLanguages) {
+       await updateUserProgrammingLanguages(userId, programmingLanguages);
+     }
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     console.error(error);

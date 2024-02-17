@@ -307,6 +307,28 @@ async function updateUserById(userId, updatedInfo, programmingLanguages = null) 
   }
 }
 
+async function updateUserProgrammingLanguages(userId, programmingLanguages) {
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+    
+    // Delete existing programming languages for the user
+    await connection.query('DELETE FROM user_languages WHERE user_id = ?', [userId]);
+    
+    // Insert new programming languages
+    for (const language of programmingLanguages) {
+      await connection.query('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
+    }
+    
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error; // Rethrow after rollback for the caller to handle
+  } finally {
+    connection.release();
+  }
+}
+
 // Retrieve security questions
 async function getSecurityQuestions(username) {
   try {
@@ -426,6 +448,7 @@ module.exports = {
   deleteOldMarkedMessages,
   getDeletedMessagesForUser,
   updateUserById,
+  updateUserProgrammingLanguages,
   getSecurityQuestions,
   verifySecurityAnswers,
   resetPassword,
