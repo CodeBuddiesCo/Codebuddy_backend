@@ -67,7 +67,8 @@ const createTables = async () => {
         date_time DATETIME NOT NULL,
         spots_available INT NOT NULL,
         meeting_link VARCHAR(255) NOT NULL, 
-        is_active BOOLEAN DEFAULT TRUE
+        is_active BOOLEAN DEFAULT TRUE,
+        additional_info VARCHAR(255)
       );
     `)
 

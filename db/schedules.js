@@ -44,7 +44,7 @@ async function attachEventsToScheduleById(scheduleId) {
       const [matchingEvents] = await db.execute(
         `
           SELECT events.id AS event_id, events.buddy_one, events.buddy_two, events.primary_language, events.secondary_language,
-          events.date_time, events.spots_available, events.meeting_link, schedule_events.id AS schedule_events_id, events.is_Active
+          events.date_time, events.spots_available, events.meeting_link, schedule_events.id AS schedule_events_id, events.is_Active, events.additional_info
           FROM events
           INNER JOIN schedule_events ON schedule_events.event_id = events.id
           WHERE schedule_events.schedule_id='${scheduleId}';

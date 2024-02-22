@@ -10,7 +10,7 @@ async function getEventById(id) {
 
     const [event] = await db.execute(`
       SELECT events.id AS event_id, events.buddy_one, events.buddy_two, events.primary_language, 
-      events.secondary_language, events.date_time, events.spots_available, events.meeting_link, events.is_active
+      events.secondary_language, events.date_time, events.spots_available, events.meeting_link, events.is_active, events.additional_info
       FROM events
       WHERE id = "${id}";`
     );
