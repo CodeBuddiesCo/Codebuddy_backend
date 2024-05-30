@@ -102,13 +102,25 @@ const createTables = async () => {
     );
   `);
 
-  await db.query(`
+    await db.query(`
   CREATE TABLE user_languages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     programming_language VARCHAR(100),
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
+  
+`);
+
+await db.query(`
+CREATE TABLE follows (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  follower_id INT NOT NULL,
+  followee_id INT NOT NULL,
+  FOREIGN KEY (follower_id) REFERENCES users(id),
+  FOREIGN KEY (followee_id) REFERENCES users(id),
+  UNIQUE (follower_id, followee_id)
+);
 `);
 
     console.log("created Tables");

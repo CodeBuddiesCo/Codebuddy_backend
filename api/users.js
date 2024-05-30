@@ -22,6 +22,7 @@ const {
   resetPassword,
   updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
+  getUsersFollowedByUser
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -356,6 +357,19 @@ usersRouter.put('/update-security/:id', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error updating security questions and answers' });
+  }
+});
+
+// Get all users followed by a specific user
+usersRouter.get('/:userId/follows', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const followedUsers = await getUsersFollowedByUser(userId);
+    res.status(200).json(followedUsers);
+  } catch (error) {
+    console.error("Error fetching followed users for user ID", userId, error);
+    res.status(500).json({ error: 'Error fetching followed users' });
   }
 });
 
