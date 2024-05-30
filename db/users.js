@@ -67,17 +67,14 @@ async function getUserById(id) {
     }
 
     const user = userRows[0];
-    delete user.password; // Remove sensitive information
+    delete user.password;
 
-    // Now, fetch the programming languages associated with the user
     const [languageRows] = await db.execute("SELECT programming_language FROM user_languages WHERE user_id = ?", [id]);
     console.log("Programming languages fetched for user:", languageRows);
 
-    // Map the result to an array of programming languages
     const programmingLanguages = languageRows.map(row => row.programming_language);
     console.log("Programming languages for user by Id", id, "->", programmingLanguages);
 
-    // Include the programming languages in the user object
     user.programmingLanguages = programmingLanguages;
 
     console.log("User by Id", id, "->", user);
@@ -444,6 +441,25 @@ async function updateSecurityQuestionsAndAnswers(userId, security_question_1, se
 
 // Update Languages
 
+// Fetch User Follows
+
+async function getUsersFollowedByUser(userId) {
+  try {
+    const [followedUsers] = await db.execute(`
+      SELECT u.id, u.name, u.email, u.username, u.is_buddy, u.isAdmin
+      FROM follows f
+      JOIN users u ON f.followee_id = u.id
+      WHERE f.follower_id = ?;
+    `, [userId]);
+
+    console.log("Users followed by user ID", userId, "->", followedUsers);
+    return followedUsers;
+  } catch (error) {
+    console.error("Error getting users followed by user ID", userId, error);
+    throw error;
+  }
+}
+
 
 module.exports = {
   getAllUsers,
@@ -464,4 +480,5 @@ module.exports = {
   resetPassword,
   updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
+  getUsersFollowedByUser,
 };
