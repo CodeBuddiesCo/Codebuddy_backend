@@ -361,15 +361,25 @@ usersRouter.put('/update-security/:id', async (req, res) => {
 });
 
 // Get all users followed by a specific user
-usersRouter.get('/:userId/follows', async (req, res) => {
-  const userId = req.params.userId;
+usersRouter.get('/:id/follows', async (req, res) => {
+  console.log('Route hit: /:id/follows');
+  const userId = req.params.id;
 
   try {
+    console.log('Fetching followed users for user ID:', userId);
     const followedUsers = await getUsersFollowedByUser(userId);
-    res.status(200).json(followedUsers);
+    console.log('Followed users fetched:', followedUsers);
+
+    if (followedUsers && followedUsers.length > 0) {
+      console.log('Sending response', followedUsers);
+      return res.json(followedUsers);
+    } else {
+      console.log('No followed users found');
+      return res.status(404).json({ error: 'No followed users found' });
+    }
   } catch (error) {
-    console.error("Error fetching followed users for user ID", userId, error);
-    res.status(500).json({ error: 'Error fetching followed users' });
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error getting followed users' });
   }
 });
 

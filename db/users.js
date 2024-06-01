@@ -446,7 +446,7 @@ async function updateSecurityQuestionsAndAnswers(userId, security_question_1, se
 async function getUsersFollowedByUser(userId) {
   try {
     const [followedUsers] = await db.execute(`
-      SELECT u.id, u.name, u.email, u.username, u.is_buddy, u.isAdmin
+      SELECT u.id, u.name, u.email, u.username, u.pfp_url, u.title, u.primary_language, u.secondary_language, u.buddy_bio, u.is_buddy, u.isAdmin
       FROM follows f
       JOIN users u ON f.followee_id = u.id
       WHERE f.follower_id = ?;
@@ -459,7 +459,6 @@ async function getUsersFollowedByUser(userId) {
     throw error;
   }
 }
-
 
 module.exports = {
   getAllUsers,
