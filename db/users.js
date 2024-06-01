@@ -475,6 +475,22 @@ async function followUser(followerId, followeeId) {
   }
 }
 
+// Unfollow User
+async function unfollowUser(followerId, followeeId) {
+  try {
+    await db.execute(`
+      DELETE FROM follows 
+      WHERE follower_id = ? AND followee_id = ?;
+    `, [followerId, followeeId]);
+
+    console.log(`User with ID ${followerId} has unfollowed user with ID ${followeeId}`);
+    return { success: true, message: 'Unfollow successful' };
+  } catch (error) {
+    console.error("Error unfollowing user:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getAllUsers,
   createUser,
@@ -496,4 +512,5 @@ module.exports = {
   demoteUserFromBuddy,
   getUsersFollowedByUser,
   followUser,
+  unfollowUser,
 };

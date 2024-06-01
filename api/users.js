@@ -24,6 +24,7 @@ const {
   demoteUserFromBuddy,
   getUsersFollowedByUser,
   followUser,
+  unfollowUser,
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -384,7 +385,7 @@ usersRouter.get('/:id/follows', async (req, res) => {
   }
 });
 
-// Follow a User
+// Follow a user
 usersRouter.post('/:id/follow', async (req, res) => {
   console.log('Route hit: /:id/follow');
   const followerId = req.params.id;
@@ -397,6 +398,22 @@ usersRouter.post('/:id/follow', async (req, res) => {
   } catch (error) {
     console.log('Error:', error);
     return res.status(500).json({ error: 'Error following user' });
+  }
+});
+
+// Unfollow a user
+usersRouter.delete('/:id/unfollow', async (req, res) => {
+  console.log('Route hit: /:id/unfollow');
+  const followerId = req.params.id;
+  const { followeeId } = req.body;
+
+  try {
+    console.log(`User ID ${followerId} wants to unfollow user ID ${followeeId}`);
+    const result = await unfollowUser(followerId, followeeId);
+    return res.json(result);
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error unfollowing user' });
   }
 });
 
