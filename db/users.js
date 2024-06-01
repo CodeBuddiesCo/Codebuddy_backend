@@ -59,7 +59,11 @@ async function getUserById(id) {
   try {
     console.log(`About to fetch user with id ${id}`);
     // Fetch the user details
-    const [userRows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
+    const [userRows] = await db.execute(`
+      SELECT id, name, email, username, pfp_url, title, primary_language, secondary_language, buddy_bio, is_buddy, isAdmin
+      FROM users
+      WHERE id = ?
+    `, [id]);
 
     if (userRows.length === 0) {
       console.log(`No user found with id ${id}`);
@@ -69,7 +73,11 @@ async function getUserById(id) {
     const user = userRows[0];
     delete user.password;
 
-    const [languageRows] = await db.execute("SELECT programming_language FROM user_languages WHERE user_id = ?", [id]);
+    const [languageRows] = await db.execute(`
+      SELECT programming_language
+      FROM user_languages
+      WHERE user_id = ?
+    `, [id]);
     console.log("Programming languages fetched for user:", languageRows);
 
     const programmingLanguages = languageRows.map(row => row.programming_language);

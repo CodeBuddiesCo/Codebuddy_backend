@@ -417,4 +417,27 @@ usersRouter.delete('/:id/unfollow', async (req, res) => {
   }
 });
 
+// Fetch user profile by ID
+usersRouter.get('/profile/:id', async (req, res) => {
+  console.log('Route hit: /profile/:id');
+  const userId = req.params.id;
+
+  try {
+    console.log(`Fetching profile for user ID: ${userId}`);
+    const user = await getUserById(userId);
+    console.log('User profile fetched:', user);
+
+    if (user) {
+      console.log('Sending response', user);
+      return res.json(user);
+    } else {
+      console.log('User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error fetching user profile' });
+  }
+});
+
 module.exports = usersRouter;
