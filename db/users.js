@@ -59,7 +59,11 @@ async function getUserById(id) {
   try {
     console.log(`About to fetch user with id ${id}`);
     // Fetch the user details
-    const [userRows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
+    const [userRows] = await db.execute(`
+      SELECT id, name, email, username, pfp_url, title, primary_language, secondary_language, buddy_bio, is_buddy, isAdmin
+      FROM users
+      WHERE id = ?
+    `, [id]);
 
     if (userRows.length === 0) {
       console.log(`No user found with id ${id}`);
@@ -69,7 +73,11 @@ async function getUserById(id) {
     const user = userRows[0];
     delete user.password;
 
-    const [languageRows] = await db.execute("SELECT programming_language FROM user_languages WHERE user_id = ?", [id]);
+    const [languageRows] = await db.execute(`
+      SELECT programming_language
+      FROM user_languages
+      WHERE user_id = ?
+    `, [id]);
     console.log("Programming languages fetched for user:", languageRows);
 
     const programmingLanguages = languageRows.map(row => row.programming_language);
@@ -320,13 +328,13 @@ async function updateUserProgrammingLanguages(userId, programmingLanguages) {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-    
+
     await connection.query('DELETE FROM user_languages WHERE user_id = ?', [userId]);
-    
+
     for (const language of programmingLanguages) {
       await connection.query('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
     }
-    
+
     await connection.commit();
   } catch (error) {
     await connection.rollback();
@@ -439,14 +447,12 @@ async function updateSecurityQuestionsAndAnswers(userId, security_question_1, se
   }
 }
 
-// Update Languages
-
 // Fetch User Follows
 
 async function getUsersFollowedByUser(userId) {
   try {
     const [followedUsers] = await db.execute(`
-      SELECT u.id, u.name, u.email, u.username, u.is_buddy, u.isAdmin
+      SELECT u.id, u.name, u.email, u.username, u.pfp_url, u.title, u.primary_language, u.secondary_language, u.buddy_bio, u.is_buddy, u.isAdmin
       FROM follows f
       JOIN users u ON f.followee_id = u.id
       WHERE f.follower_id = ?;
@@ -460,6 +466,38 @@ async function getUsersFollowedByUser(userId) {
   }
 }
 
+// Follow User
+async function followUser(followerId, followeeId) {
+  try {
+    await db.execute(`
+      INSERT INTO follows (follower_id, followee_id)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE follower_id = follower_id;
+    `, [followerId, followeeId]);
+
+    console.log(`User with ID ${followerId} is now following user with ID ${followeeId}`);
+    return { success: true, message: 'Follow successful' };
+  } catch (error) {
+    console.error("Error following user:", error);
+    throw error;
+  }
+}
+
+// Unfollow User
+async function unfollowUser(followerId, followeeId) {
+  try {
+    await db.execute(`
+      DELETE FROM follows 
+      WHERE follower_id = ? AND followee_id = ?;
+    `, [followerId, followeeId]);
+
+    console.log(`User with ID ${followerId} has unfollowed user with ID ${followeeId}`);
+    return { success: true, message: 'Unfollow successful' };
+  } catch (error) {
+    console.error("Error unfollowing user:", error);
+    throw error;
+  }
+}
 
 module.exports = {
   getAllUsers,
@@ -481,4 +519,6 @@ module.exports = {
   updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
   getUsersFollowedByUser,
+  followUser,
+  unfollowUser,
 };

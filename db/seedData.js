@@ -112,7 +112,7 @@ const createTables = async () => {
   
 `);
 
-await db.query(`
+    await db.query(`
 CREATE TABLE follows (
   id INT AUTO_INCREMENT PRIMARY KEY,
   follower_id INT NOT NULL,

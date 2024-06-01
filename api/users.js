@@ -22,7 +22,9 @@ const {
   resetPassword,
   updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
-  getUsersFollowedByUser
+  getUsersFollowedByUser,
+  followUser,
+  unfollowUser,
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -361,15 +363,80 @@ usersRouter.put('/update-security/:id', async (req, res) => {
 });
 
 // Get all users followed by a specific user
-usersRouter.get('/:userId/follows', async (req, res) => {
-  const userId = req.params.userId;
+usersRouter.get('/:id/follows', async (req, res) => {
+  console.log('Route hit: /:id/follows');
+  const userId = req.params.id;
 
   try {
+    console.log('Fetching followed users for user ID:', userId);
     const followedUsers = await getUsersFollowedByUser(userId);
-    res.status(200).json(followedUsers);
+    console.log('Followed users fetched:', followedUsers);
+
+    if (followedUsers && followedUsers.length > 0) {
+      console.log('Sending response', followedUsers);
+      return res.json(followedUsers);
+    } else {
+      console.log('No followed users found');
+      return res.status(404).json({ error: 'No followed users found' });
+    }
   } catch (error) {
-    console.error("Error fetching followed users for user ID", userId, error);
-    res.status(500).json({ error: 'Error fetching followed users' });
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error getting followed users' });
+  }
+});
+
+// Follow a user
+usersRouter.post('/:id/follow', async (req, res) => {
+  console.log('Route hit: /:id/follow');
+  const followerId = req.params.id;
+  const { followeeId } = req.body;
+
+  try {
+    console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
+    const result = await followUser(followerId, followeeId);
+    return res.json(result);
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error following user' });
+  }
+});
+
+// Unfollow a user
+usersRouter.delete('/:id/unfollow', async (req, res) => {
+  console.log('Route hit: /:id/unfollow');
+  const followerId = req.params.id;
+  const { followeeId } = req.body;
+
+  try {
+    console.log(`User ID ${followerId} wants to unfollow user ID ${followeeId}`);
+    const result = await unfollowUser(followerId, followeeId);
+    return res.json(result);
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error unfollowing user' });
+  }
+});
+
+// Fetch user profile by ID
+usersRouter.get('/profile/:id', async (req, res) => {
+  console.log('Route hit: /profile/:id');
+  const userId = req.params.id;
+
+  try {
+    console.log(`Fetching profile for user ID: ${userId}`);
+    const user = await getUserById(userId);
+    console.log('User profile fetched:', user);
+
+    if (user) {
+      console.log('Sending response', user);
+      return res.json(user);
+    } else {
+      console.log('User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error fetching user profile' });
   }
 });
 
