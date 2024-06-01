@@ -22,7 +22,8 @@ const {
   resetPassword,
   updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
-  getUsersFollowedByUser
+  getUsersFollowedByUser,
+  followUser,
 } = require('../db/users');
 
 const usersRouter = express.Router();
@@ -380,6 +381,22 @@ usersRouter.get('/:id/follows', async (req, res) => {
   } catch (error) {
     console.log('Error:', error);
     return res.status(500).json({ error: 'Error getting followed users' });
+  }
+});
+
+// Follow a User
+usersRouter.post('/:id/follow', async (req, res) => {
+  console.log('Route hit: /:id/follow');
+  const followerId = req.params.id;
+  const { followeeId } = req.body;
+
+  try {
+    console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
+    const result = await followUser(followerId, followeeId);
+    return res.json(result);
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error following user' });
   }
 });
 

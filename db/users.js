@@ -320,13 +320,13 @@ async function updateUserProgrammingLanguages(userId, programmingLanguages) {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-    
+
     await connection.query('DELETE FROM user_languages WHERE user_id = ?', [userId]);
-    
+
     for (const language of programmingLanguages) {
       await connection.query('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
     }
-    
+
     await connection.commit();
   } catch (error) {
     await connection.rollback();
@@ -439,8 +439,6 @@ async function updateSecurityQuestionsAndAnswers(userId, security_question_1, se
   }
 }
 
-// Update Languages
-
 // Fetch User Follows
 
 async function getUsersFollowedByUser(userId) {
@@ -456,6 +454,23 @@ async function getUsersFollowedByUser(userId) {
     return followedUsers;
   } catch (error) {
     console.error("Error getting users followed by user ID", userId, error);
+    throw error;
+  }
+}
+
+// Follow User
+async function followUser(followerId, followeeId) {
+  try {
+    await db.execute(`
+      INSERT INTO follows (follower_id, followee_id)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE follower_id = follower_id;
+    `, [followerId, followeeId]);
+
+    console.log(`User with ID ${followerId} is now following user with ID ${followeeId}`);
+    return { success: true, message: 'Follow successful' };
+  } catch (error) {
+    console.error("Error following user:", error);
     throw error;
   }
 }
@@ -480,4 +495,5 @@ module.exports = {
   updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
   getUsersFollowedByUser,
+  followUser,
 };
