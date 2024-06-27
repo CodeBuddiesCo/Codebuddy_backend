@@ -55,6 +55,25 @@ async function getAllUsers() {
   }
 }
 
+async function getAllBuddies() {
+  try {
+    const [buddyUsers] = await db.execute(`
+      SELECT * 
+      FROM users 
+      WHERE is_buddy = true; 
+    `);
+
+    buddyUsers.map((user) => delete user.password)
+
+    console.log("Results from getBuddyUsers function ->", buddyUsers)
+    return buddyUsers
+
+  } catch (error) {
+    console.error("Error getting buddy users");
+    throw error;
+  }
+}
+
 async function getUserById(id) {
   try {
     console.log(`About to fetch user with id ${id}`);
@@ -499,8 +518,12 @@ async function unfollowUser(followerId, followeeId) {
   }
 }
 
+
+ getUsersFollowedByUser(1);
+
 module.exports = {
   getAllUsers,
+  getAllBuddies,
   createUser,
   getUserbyUserNameOrEmail,
   getUserbyUserName,

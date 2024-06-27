@@ -6,6 +6,7 @@ const { requireUser, requireAdmin, validateToken } = require('./utils');
 const {
   getUserbyUserNameOrEmail,
   getAllUsers,
+  getAllBuddies,
   createUser,
   getUserbyUserName,
   promoteUserToBuddy,
@@ -241,6 +242,16 @@ usersRouter.get('/users', async (req, res) => {
     res.json(allUsers);
   } catch (error) {
     res.status(500).json({ error: 'Error getting all users' });
+  }
+});
+
+// Get all buddies
+usersRouter.get('/buddies', async (req, res) => {
+  try {
+    const buddyUsers = await getAllBuddies();
+    res.json(buddyUsers);
+  } catch (error) {
+    res.status(500).json({ error: 'Error getting buddies' });
   }
 });
 
