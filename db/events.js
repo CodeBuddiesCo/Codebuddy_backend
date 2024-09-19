@@ -7,7 +7,7 @@ const { getUserbyUserName } = require("./users");
 async function createEvent(event) {
   try {
     
-    const {buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link} = event
+    const {buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link, additional_info} = event
     
     await db.execute(`
       INSERT INTO events (buddy_one, buddy_two, primary_language, secondary_language, date_time, spots_available, meeting_link, additional_info) 
