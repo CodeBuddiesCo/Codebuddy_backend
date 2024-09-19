@@ -8,28 +8,28 @@ const { createSchedule } = require('./schedules');
 const dropTables = async () => {
   try {
     console.log("connected");
-    await db.query(`
-      DROP TABLE IF EXISTS schedule_events;
-    `);
-    await db.query(`
-      DROP TABLE IF EXISTS schedules;
-    `);
-    await db.query(`
-    DROP TABLE IF EXISTS messages;
-    `);
-    await db.query(`
-      DROP TABLE IF EXISTS events;
-    `);
-    await db.query(`
-      DROP TABLE IF EXISTS users;
-    `);
 
-    console.log("Finished dropping tables!")
+    // Disable foreign key checks
+    await db.query('SET FOREIGN_KEY_CHECKS = 0;');
+
+    await db.query(`DROP TABLE IF EXISTS schedule_events;`);
+    await db.query(`DROP TABLE IF EXISTS schedules;`);
+    await db.query(`DROP TABLE IF EXISTS messages;`);
+    await db.query(`DROP TABLE IF EXISTS follows;`);
+    await db.query(`DROP TABLE IF EXISTS user_languages;`);  
+    await db.query(`DROP TABLE IF EXISTS events;`);
+    await db.query(`DROP TABLE IF EXISTS users;`);  
+
+    // Enable foreign key checks
+    await db.query('SET FOREIGN_KEY_CHECKS = 1;');
+
+    console.log("Finished dropping tables!");
   } catch (error) {
-    console.error("Error dropping tables!")
+    console.error("Error dropping tables!");
     throw error;
   }
 }
+
 
 const createTables = async () => {
   try {
@@ -212,7 +212,7 @@ async function seedUserData() {
     },
   ];
 
-  await Promise.all(users.map(createUser))
+  await Promise.all(users.map(user => createUser(user, user.programmingLanguages)));
 
 }
 
@@ -226,7 +226,8 @@ async function seedEventData() {
       secondary_language: null,
       date_time: '2023-8-18 19:00:00',
       spots_available: 3,
-      meeting_link: 'https://us06web.zoom.us/j/88350212230?pwd=YXh5UWk0WTY2QWQ2S2tPS3BBWUxXdz09'
+      meeting_link: 'https://us06web.zoom.us/j/88350212230?pwd=YXh5UWk0WTY2QWQ2S2tPS3BBWUxXdz09',
+      additional_info: 'Initial meeting to discuss project.'
     },
     {
       buddy_one: 'Hollye',
@@ -235,7 +236,8 @@ async function seedEventData() {
       secondary_language: null,
       date_time: '2023-8-31 13:30:00',
       spots_available: 3,
-      meeting_link: 'https://us06web.zoom.us/j/88350212695?pwd=YXh5UWk0WTY2QWQ2S2tPS3BBWUxXdz09'
+      meeting_link: 'https://us06web.zoom.us/j/88350212695?pwd=YXh5UWk0WTY2QWQ2S2tPS3BBWUxXdz09',
+      additional_info: 'General HTML discussion.'
     },
   ];
 
