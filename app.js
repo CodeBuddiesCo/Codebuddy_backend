@@ -11,16 +11,12 @@ const mysql = require('mysql');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin
-    if (!origin || origin.startsWith('http://localhost:')) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: '*', // Temporarily allow all origins for testing
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+app.options('*', cors()); // Enable preflight requests for all routes
 
 app.use((req, res, next) => {
   console.log("<____Body Logger START____>");
