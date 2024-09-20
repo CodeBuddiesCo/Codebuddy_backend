@@ -11,7 +11,13 @@ const mysql = require('mysql');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin
+    if (!origin || origin.startsWith('http://localhost:')) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -20,39 +26,41 @@ app.use((req, res, next) => {
   console.log("<____Body Logger START____>");
   console.log(req.body);
   console.log("<_____Body Logger END_____>");
-
   next();
 });
 
-const dbHost = process.env.DB_HOST;
-const dbUser = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const dbName = process.env.DB_NAME;
-
+// Database connection
 const db = mysql.createConnection({
-  host: dbHost,
-  user: dbUser,
-  password: dbPassword,
-  database: dbName
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 db.connect((err) => {
-  if (err) throw err;
+  if (err) {
+    console.error('Database connection failed:', err.stack);
+    return;
+  }
   console.log('Connected to the database');
 });
 
+// Test route
 app.get('/', (req, res) => {
   res.send('Hello, world!');
 });
 
+// API routes
 const apiRouter = require('./api');
 app.use('/api', apiRouter);
 
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+// Scheduled tasks
 const cron = require('node-cron');
 const { deleteOldMarkedMessages } = require('./db/users');
 
