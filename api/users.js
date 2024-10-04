@@ -397,10 +397,10 @@ usersRouter.get('/:id/follows', async (req, res) => {
 });
 
 // Follow a user
-usersRouter.post('/:id/follow', async (req, res) => {
+usersRouter.post('/:id/follow', requireUser, async (req, res) => {
   console.log('Route hit: /:id/follow');
-  const followerId = req.params.id;
-  const { followeeId } = req.body;
+  const followerId = req.user.id;
+  const followeeId = req.params.id;
 
   try {
     console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
@@ -413,10 +413,10 @@ usersRouter.post('/:id/follow', async (req, res) => {
 });
 
 // Unfollow a user
-usersRouter.delete('/:id/unfollow', async (req, res) => {
+usersRouter.delete('/:id/unfollow', requireUser, async (req, res) => {
   console.log('Route hit: /:id/unfollow');
-  const followerId = req.params.id;
-  const { followeeId } = req.body;
+  const followerId = req.user.id;
+  const followeeId = req.params.id;
 
   try {
     console.log(`User ID ${followerId} wants to unfollow user ID ${followeeId}`);
