@@ -410,7 +410,7 @@ usersRouter.post('/:id/follow', requireUser, async (req, res) => {
   const followeeId = req.params.id;
 
   try {
-    if (followeeId !== followerId) {
+    if (followeeId != followerId) {
       console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
       const result = await followUser(followerId, followeeId);
       return res.json(result);
