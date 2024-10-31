@@ -268,7 +268,7 @@ usersRouter.get('/me', requireUser, async (req, res) => {
       const followsArray = await getUsersFollowedByUser(userId)
       user.follows = followsArray
       const eventsArray = await getScheduleWithEventsByUserId(userId)
-      userEventsArray = eventsArray[1]
+      const userEventsArray = eventsArray[1]
       user.events = userEventsArray.events
       console.log('Sending response', user);
       return res.json(user);
@@ -449,7 +449,7 @@ usersRouter.get('/profile/:id', async (req, res) => {
       const followsArray = await getUsersFollowedByUser(userId)
       user.follows = followsArray
       const eventsArray = await getScheduleWithEventsByUserId(userId)
-      userEventsArray = eventsArray[1]
+      const userEventsArray = eventsArray[1]
       user.events = userEventsArray.events
       console.log('Sending response', user);
       return res.json(user);
