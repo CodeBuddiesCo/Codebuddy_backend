@@ -341,7 +341,7 @@ usersRouter.post('/reset-password', async (req, res) => {
       return res.status(401).json({ error: 'Security answers do not match' });
     }
 
-    // Proceed with password resetgit stat
+    // Proceed with password reset
     await resetPassword(username, newPassword);
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
