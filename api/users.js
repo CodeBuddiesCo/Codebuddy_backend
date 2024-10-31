@@ -410,9 +410,11 @@ usersRouter.post('/:id/follow', requireUser, async (req, res) => {
   const followeeId = req.params.id;
 
   try {
-    console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
-    const result = await followUser(followerId, followeeId);
-    return res.json(result);
+    if (followeeId !== followerId) {
+      console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
+      const result = await followUser(followerId, followeeId);
+      return res.json(result);
+    }
   } catch (error) {
     console.log('Error:', error);
     return res.status(500).json({ error: 'Error following user' });
