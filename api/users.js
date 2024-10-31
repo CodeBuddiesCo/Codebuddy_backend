@@ -27,6 +27,7 @@ const {
   followUser,
   unfollowUser,
 } = require('../db/users');
+const { getScheduleWithEventsByUserId } = require('../db/schedules');
 
 const usersRouter = express.Router();
 
@@ -266,6 +267,8 @@ usersRouter.get('/me', requireUser, async (req, res) => {
     if (user && Object.keys(user).length > 0) {
       const followsArray = await getUsersFollowedByUser(userId)
       user.follows = followsArray
+      const eventsArray = await getScheduleWithEventsByUserId(userId)
+      user.events = eventsArray
       console.log('Sending response', user);
       return res.json(user);
     } else {
@@ -444,6 +447,8 @@ usersRouter.get('/profile/:id', async (req, res) => {
     if (user) {
       const followsArray = await getUsersFollowedByUser(userId)
       user.follows = followsArray
+      const eventsArray = await getScheduleWithEventsByUserId(userId)
+      user.events = eventsArray
       console.log('Sending response', user);
       return res.json(user);
     } else {
