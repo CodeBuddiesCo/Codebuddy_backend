@@ -255,15 +255,17 @@ usersRouter.get('/buddies', async (req, res) => {
   }
 });
 
-// Get a single user by ID
-usersRouter.get('/:id', async (req, res) => {
-  const userId = req.params.id;
+// Get signed in user by id
+usersRouter.get('/me', requireUser, async (req, res) => {
+  const userId = req.user.id;
 
   try {
     const user = await getUserById(userId);
     console.log('User fetched:', user);
 
     if (user && Object.keys(user).length > 0) {
+      const followsArray = await getUsersFollowedByUser(userId)
+      user.follows = followsArray
       console.log('Sending response', user);
       return res.json(user);
     } else {
@@ -277,8 +279,8 @@ usersRouter.get('/:id', async (req, res) => {
 });
 
 // Update a user by ID
-usersRouter.put('/:id', async (req, res) => {
-  const userId = req.params.id;
+usersRouter.put('/:id', requireUser, async (req, res) => {
+  const userId = req.user.id;
   const { programmingLanguages, ...updatedInfo } = req.body;
   
   try {
@@ -436,9 +438,12 @@ usersRouter.get('/profile/:id', async (req, res) => {
   try {
     console.log(`Fetching profile for user ID: ${userId}`);
     const user = await getUserById(userId);
+    
     console.log('User profile fetched:', user);
 
     if (user) {
+      const followsArray = await getUsersFollowedByUser(userId)
+      user.follows = followsArray
       console.log('Sending response', user);
       return res.json(user);
     } else {
