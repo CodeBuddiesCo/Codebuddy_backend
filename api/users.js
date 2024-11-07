@@ -246,20 +246,21 @@ usersRouter.get('/users', async (req, res) => {
   }
 });
 
-//Get user by id
-usersRouter.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
+// Get user by ID
+usersRouter.get('/:id', async (req, res) => {
+  const userId = req.params.id;
 
   try {
     const user = await getUserById(userId);
-
-    if (!user) {
+    
+    if (user) {
+      res.json(user);
+    } else {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve user' });
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error fetching user' });
   }
 });
 
