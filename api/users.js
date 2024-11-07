@@ -246,19 +246,19 @@ usersRouter.get('/users', async (req, res) => {
   }
 });
 
-// Get user by ID
-usersRouter.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const user = await getUserById(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve user' });
-  }
-});
+// // Get user by ID
+// usersRouter.get('/:userId', async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     const user = await getUserById(userId);
+//     if (!user) {
+//       return res.status(404).json({ error: 'User not found' });
+//     }
+//     res.json(user);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to retrieve user' });
+//   }
+// });
 
 // Get all buddies
 usersRouter.get('/buddies', async (req, res) => {
