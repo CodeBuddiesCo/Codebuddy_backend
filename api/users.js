@@ -246,6 +246,24 @@ usersRouter.get('/users', async (req, res) => {
   }
 });
 
+// Get user by ID
+usersRouter.get('/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await getUserById(userId);
+    
+    if (user) {
+      res.json(user);
+    } else {
+      return res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.log('Error:', error);
+    return res.status(500).json({ error: 'Error fetching user' });
+  }
+});
+
 // Get all buddies
 usersRouter.get('/buddies', async (req, res) => {
   try {
