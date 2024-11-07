@@ -284,8 +284,10 @@ usersRouter.get('/me', requireUser, async (req, res) => {
     if (user && Object.keys(user).length > 0) {
       const followsArray = await getUsersFollowedByUser(userId)
       user.follows = followsArray
-      const eventsArray = await getScheduleWithEventsByUserId(userId)
-      user.events = eventsArray.events
+      const userSchedule = await getScheduleWithEventsByUserId(userId)
+      if (userSchedule) {
+       user.schedule = userSchedule[0] 
+      }
       console.log('Sending response', user);
       return res.json(user);
     } else {
@@ -425,9 +427,13 @@ usersRouter.post('/:id/follow', requireUser, async (req, res) => {
   const followeeId = req.params.id;
 
   try {
-    console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
-    const result = await followUser(followerId, followeeId);
-    return res.json(result);
+    if (followeeId != followerId) {
+      console.log(`User ID ${followerId} wants to follow user ID ${followeeId}`);
+      const result = await followUser(followerId, followeeId);
+      return res.json(result);
+    } else console.log('Error:', error);
+      return res.status(500).json({ error: 'Matching User Ids' });
+
   } catch (error) {
     console.log('Error:', error);
     return res.status(500).json({ error: 'Error following user' });
@@ -464,8 +470,10 @@ usersRouter.get('/profile/:id', async (req, res) => {
     if (user) {
       const followsArray = await getUsersFollowedByUser(userId)
       user.follows = followsArray
-      const eventsArray = await getScheduleWithEventsByUserId(userId)
-      user.events = eventsArray.events
+      const userSchedule = await getScheduleWithEventsByUserId(userId)
+      if (userSchedule) {
+       user.schedule = userSchedule[0] 
+      }
       console.log('Sending response', user);
       return res.json(user);
     } else {
