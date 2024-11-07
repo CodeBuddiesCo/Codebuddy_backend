@@ -246,7 +246,7 @@ usersRouter.get('/users', async (req, res) => {
   }
 });
 
-// // Get user by ID
+// Get user by ID
 // usersRouter.get('/:userId', async (req, res) => {
 //   const { userId } = req.params;
 //   try {
