@@ -12,7 +12,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(cors({
   origin: '*', // Temporarily allow all origins for testing
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Include OPTIONS
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
