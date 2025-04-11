@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('../db/db');
-const { requireUser, requireAdmin, validateToken } = require('./utils');
+const { requireUser, requireAdmin, validateToken, generateResetToken, sendPasswordResetEmail } = require('./utils');
 const {
   getUserbyUserNameOrEmail,
   getAllUsers,
@@ -26,6 +26,7 @@ const {
   getUsersFollowedByUser,
   followUser,
   unfollowUser,
+  getUserByEmail,
 } = require('../db/users');
 const { getScheduleWithEventsByUserId } = require('../db/schedules');
 
@@ -480,6 +481,52 @@ usersRouter.get('/profile/:id', async (req, res) => {
   } catch (error) {
     console.log('Error:', error);
     return res.status(500).json({ error: 'Error fetching user profile' });
+  }
+});
+
+usersRouter.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await getUserByEmail(email);
+    console.log("Found user:", user);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const token = generateResetToken(email);
+    await sendPasswordResetEmail(email, token);
+
+    res.json({ message: 'Password reset email sent' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+usersRouter.post('/reset-password-token', async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token and new password are required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const email = decoded.email;
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await db.execute(
+      `UPDATE users SET password = ? WHERE email = ?`,
+      [hashedPassword, email]
+    );
+
+    res.json({ message: 'Password reset successful' });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Invalid or expired token' });
   }
 });
 

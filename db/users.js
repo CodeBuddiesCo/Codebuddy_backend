@@ -158,6 +158,22 @@ async function getUserbyUserNameOrEmail(username, email) {
   }
 }
 
+async function getUserByEmail(email) {
+  try {
+    const [results] = await db.execute(`SELECT * FROM users WHERE email = ?`, [email]);
+    console.log("Query result for getUserByEmail:", results);
+    
+    if (results.length > 0) {
+      delete results[0].password;
+      return results[0];
+    }
+    return null;
+  } catch (err) {
+    console.error("Error in getUserByEmail:", err);
+    throw err;
+  }
+}
+
 async function promoteUserToBuddy(userId) {
   try {
     const [results] = await db.execute(`
@@ -518,7 +534,6 @@ async function unfollowUser(followerId, followeeId) {
   }
 }
 
-
  getUsersFollowedByUser(1);
 
 module.exports = {
@@ -544,4 +559,5 @@ module.exports = {
   getUsersFollowedByUser,
   followUser,
   unfollowUser,
+  getUserByEmail,
 };
