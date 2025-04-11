@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 
 function requireUser(req, res, next) {
   if (!req.user) {
@@ -32,33 +33,43 @@ const requireAdmin = (req, res, next) => {
 };
 
 function generateResetToken(userEmail) {
-  const payload = {
-    email: userEmail,
-  };
-
-  const token = jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '10m',
-  });
-
-  return token;
+  const payload = { email: userEmail };
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '10m' });
 }
 
 function validateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer token
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
-    return res.status(401).send('Token not provided');
-  }
+  if (!token) return res.status(401).send('Token not provided');
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).send('Invalid token');
-    }
-
+    if (err) return res.status(403).send('Invalid token');
     req.user = user;
-    console.log('User from token:', user); // Log the user info
+    console.log('User from token:', user);
     next();
+  });
+}
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+async function sendPasswordResetEmail(to, token) {
+  const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+
+  await transporter.sendMail({
+    from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Reset Your Password',
+    html: `
+      <p>You requested a password reset.</p>
+      <p><a href="${resetLink}">Reset your password</a></p>
+    `,
   });
 }
 
@@ -68,4 +79,5 @@ module.exports = {
   validateToken,
   requireBuddy,
   generateResetToken,
-}
+  sendPasswordResetEmail,
+};
