@@ -61,7 +61,7 @@ const transporter = nodemailer.createTransport({
 
 async function sendPasswordResetEmail(to, token) {
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+const resetUrl = `${baseUrl}/user/reset-password?token=${token}`;
 
   await transporter.sendMail({
     from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
