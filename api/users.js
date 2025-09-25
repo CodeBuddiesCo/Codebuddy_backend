@@ -530,4 +530,29 @@ usersRouter.post('/reset-password-token', async (req, res) => {
   }
 });
 
+usersRouter.post('/forgot-username', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await getUserByEmail(email);
+
+    if (user) {
+      await transporter.sendMail({
+        from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Your CodeBuddies Username',
+        html: `
+          <p>You requested your username.</p>
+          <p>Your username is: <strong>${user.username}</strong></p>
+        `,
+      });
+    }
+
+    res.json({ message: 'If an account exists for that email, your username has been sent.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 module.exports = usersRouter;
