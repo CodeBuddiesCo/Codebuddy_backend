@@ -523,14 +523,14 @@ usersRouter.post('/reset-password-token', async (req, res) => {
       [hashedPassword, email]
     );
 
-    res.json({ message: 'Password reset successful' });
+    res.json({ message: 'If an account exists for that email, your username has been sent.' });
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: 'Invalid or expired token' });
   }
 });
 
-const { sendUsernameEmail } = require('./utils'); // ✅ Make sure this is imported
+const { sendUsernameEmail } = require('./utils');
 
 usersRouter.post('/forgot-username', async (req, res) => {
   const { email } = req.body;
