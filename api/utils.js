@@ -61,7 +61,7 @@ const transporter = nodemailer.createTransport({
 
 async function sendPasswordResetEmail(to, token) {
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-const resetUrl = `${baseUrl}/user/reset-password?token=${token}`;
+  const resetUrl = `${baseUrl}/user/reset-password?token=${token}`;
 
   await transporter.sendMail({
     from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
@@ -75,6 +75,18 @@ const resetUrl = `${baseUrl}/user/reset-password?token=${token}`;
   });
 }
 
+async function sendUsernameEmail(to, username) {
+  await transporter.sendMail({
+    from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: 'Your CodeBuddies Username',
+    html: `
+      <p>You requested your username.</p>
+      <p>Your username is: <strong>${username}</strong></p>
+    `,
+  });
+}
+
 module.exports = {
   requireUser,
   requireAdmin,
@@ -82,4 +94,5 @@ module.exports = {
   requireBuddy,
   generateResetToken,
   sendPasswordResetEmail,
+  sendUsernameEmail,
 };

@@ -530,6 +530,8 @@ usersRouter.post('/reset-password-token', async (req, res) => {
   }
 });
 
+const { sendUsernameEmail } = require('./utils'); // ✅ Make sure this is imported
+
 usersRouter.post('/forgot-username', async (req, res) => {
   const { email } = req.body;
 
@@ -537,15 +539,7 @@ usersRouter.post('/forgot-username', async (req, res) => {
     const user = await getUserByEmail(email);
 
     if (user) {
-      await transporter.sendMail({
-        from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Your CodeBuddies Username',
-        html: `
-          <p>You requested your username.</p>
-          <p>Your username is: <strong>${user.username}</strong></p>
-        `,
-      });
+      await sendUsernameEmail(email, user.username);
     }
 
     res.json({ message: 'If an account exists for that email, your username has been sent.' });
