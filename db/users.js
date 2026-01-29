@@ -534,7 +534,7 @@ async function unfollowUser(followerId, followeeId) {
   }
 }
 
- getUsersFollowedByUser(1);
+//  getUsersFollowedByUser(1);
 
 module.exports = {
   getAllUsers,
