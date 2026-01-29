@@ -100,11 +100,20 @@ async function getScheduleWithEventsByUserId(userId) {
     const scheduleIdArray = []
     const allSchedules = []
 
-    const [schedules] = await db.execute(`
-      SELECT *
-      FROM schedules
-      WHERE user_id = "${userId}";`
-    );
+    // const [schedules] = await db.execute(`
+    //   SELECT *
+    //   FROM schedules
+    //   WHERE user_id = ${userId};`
+    // );
+
+const [schedules] = await db.execute(
+  `
+  SELECT *
+  FROM schedules
+  WHERE user_id = ?;
+  `,
+  [userId]
+);
 
     schedules.map(schedule => scheduleIdArray.push(schedule.id))
 
@@ -126,11 +135,19 @@ async function getScheduleWithEventsByUserId(userId) {
 async function getScheduleByUserId(userId) {
   try {
 
-    const [scheduleByUserId] = await db.execute(`
-      SELECT *
-      FROM schedules
-      WHERE user_id = "${userId}";`
-    );
+    // const [scheduleByUserId] = await db.execute(`
+    //   SELECT *
+    //   FROM schedules
+    //   WHERE user_id = ${userId};`
+    // );
+const [scheduleByUserId] = await db.execute(
+  `
+  SELECT *
+  FROM schedules
+  WHERE user_id = ?;
+  `,
+  [userId]
+);
 
     console.log("Schedule by User Id", userId, "->", scheduleByUserId[0]);
     return scheduleByUserId[0];
