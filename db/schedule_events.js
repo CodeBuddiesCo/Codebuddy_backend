@@ -8,11 +8,13 @@ async function getEventById(id) {
 
   try {
 
-    const [event] = await db.execute(`
-      SELECT events.id AS event_id, events.buddy_one, events.buddy_two, events.primary_language, 
-      events.secondary_language, events.date_time, events.spots_available, events.meeting_link, events.is_active, events.additional_info
-      FROM events
-      WHERE id = "${id}";`
+    const [event] = await db.execute(
+      `
+       SELECT events.id AS event_id, events.buddy_one, events.buddy_two, events.primary_language, 
+       events.secondary_language, events.date_time, events.spots_available, events.meeting_link, events.is_active, events.additional_info
+       FROM events
+       WHERE id = ?;
+      `,[id],
     );
 
     console.log("Event by Id", id, "->", event);
@@ -60,8 +62,8 @@ async function removeBuddyEventFromBuddySchedule(scheduleId, eventId) {
     const [results, rows, fields] = await db.execute(
       `
         DELETE FROM schedule_events 
-        WHERE event_id = "${eventId}" AND schedule_id = "${scheduleId}";
-      `,
+        WHERE event_id = ? AND schedule_id = ?;
+      `,[eventId, scheduleId],
     );
      
     console.log("results of removing buddy event from buddy schedule ->", results )
@@ -149,8 +151,8 @@ async function removeEventFromSchedule(scheduleId, eventId) {
     const [results, rows, fields] = await db.execute(
       `
         DELETE FROM schedule_events 
-        WHERE event_id = "${eventId}" AND schedule_id = "${scheduleId}";
-      `,
+        WHERE event_id = ? AND schedule_id = ?;
+      `,[eventId, scheduleId],
     );
      
     console.log("results of removing event from schedule ->", results )
@@ -201,16 +203,17 @@ async function secondBuddySignUp(eventId, buddyUserName) {
       await db.execute(
         `
           UPDATE events 
-          SET buddy_two = "${username}"
-          WHERE id = "${eventId}";` 
+          SET buddy_two = ?
+          WHERE id = ?;
+        `,[username, eventId]
       );
 
       const [updatedEvent] = await db.execute(
         `
           SELECT * 
           FROM events 
-          WHERE id="${eventId}";
-        `
+          WHERE id= ?;
+        `,[eventId],
       );
   
       console.log("Successfully updated event with second Buddy ->", updatedEvent); 
@@ -265,15 +268,16 @@ async function secondBuddyCancelSignUp(eventId, buddyUserName) {
         `
           UPDATE events 
           SET buddy_two = "open"
-          WHERE id = "${eventId}";` 
+          WHERE id = ?;
+        `,[eventId],
       );
 
       const [updatedEvent] = await db.execute(
         `
           SELECT * 
           FROM events 
-          WHERE id="${eventId}";
-        `
+          WHERE id= ?;
+        `,[eventId],
       );
   
       console.log("Successfully updated event to remove second Buddy ->", updatedEvent); 

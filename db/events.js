@@ -63,8 +63,8 @@ async function getEventAndAttendees(eventId) {
         SELECT schedule_events.schedule_id, schedule_events.event_id
         FROM schedule_events 
         INNER JOIN events ON schedule_events.event_id = events.id
-        WHERE schedule_events.event_id='${eventId}';
-      `
+        WHERE schedule_events.event_id=?;
+      `,[eventId]
     );
       
     schedulesWithSelectedEvent.map(event => scheduleIdsWithSelectedEvent.push(event.schedule_id))
@@ -129,10 +129,12 @@ async function getAllFutureEvents() {
     const eventIdArray = []
     const allEvents = []
     
-    const [events] = await db.execute(`
-      SELECT *
-      FROM events
-      WHERE date_time > "${date}" AND is_active = true;`
+    const [events] = await db.execute(
+      `
+        SELECT *
+        FROM events
+        WHERE date_time > ? AND is_active = true;
+      `,[date],
     );
     
     events.map(event => eventIdArray.push(event.id))
@@ -159,10 +161,12 @@ async function getEventsByBuddy(buddyName) {
     const eventIdArray = []
     const allEvents = []
 
-    const [events] = await db.execute(`
-      SELECT *
-      FROM events
-      WHERE buddy_one = "${buddyName}" OR buddy_two = "${buddyName}";`
+    const [events] = await db.execute(
+      `
+       SELECT *
+       FROM events
+       WHERE buddy_one = ? OR buddy_two = ?;
+       `,[buddyName],
     );
 
     events.map(event => eventIdArray.push(event.id))
@@ -183,6 +187,7 @@ async function getEventsByBuddy(buddyName) {
 }
 
 // * API Retrieves a list of events that belong to two Specific Buddies with attendees - returns an array of events
+//! I don't think I am actually calling this one but it might need to be repaired to remove the string literal "${}""
 async function getEventsByBothBuddies(buddyOne, buddyTwo) {
 
   try {
@@ -220,10 +225,12 @@ async function getEventsByCodeLanguage(codeLanguage) {
     const eventIdArray = []
     const allEvents = []
 
-    const [events] = await db.execute(`
-      SELECT *
-      FROM events
-      WHERE primary_language = "${codeLanguage}" OR secondary_language = "${codeLanguage}";`
+    const [events] = await db.execute(
+      `
+       SELECT *
+       FROM events
+       WHERE primary_language = ? OR secondary_language = ?;
+       `,[codeLanguage, codeLanguage],
     );
 
     events.map(event => eventIdArray.push(event.id))
@@ -244,6 +251,7 @@ async function getEventsByCodeLanguage(codeLanguage) {
 }
 
 // * API Retrieves a list of events that match both primary and secondary code languages with attendees - returns an array of events 
+//! I don't think I am actually calling this one but it might need to be repaired to remove the string literal "${}""
 async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
 
   try {
@@ -278,17 +286,21 @@ async function getEventsByBothCodeLanguages(codeLanguageOne, codeLanguageTwo) {
 async function cancelEvent(eventId){
   try {
 
-    const [results,rows,fields] = await db.execute(`
-      UPDATE events 
-      SET is_active = false
-      WHERE id="${eventId}";`
+    const [results,rows,fields] = await db.execute(
+      `
+       UPDATE events 
+       SET is_active = false
+       WHERE id= ?;
+      `,[eventId],
     );
 
-    const [cancelledEvent] = await db.execute(`
-      SELECT * 
-      FROM events
-      WHERE id="${eventId}";
-    `)
+    const [cancelledEvent] = await db.execute(
+      `
+       SELECT * 
+       FROM events
+       WHERE id= ?;
+      `,[eventId],
+    )
 
 
     console.log("Cancelled Event ->", cancelledEvent);
@@ -338,8 +350,8 @@ async function deleteScheduleEventsForEventId(eventId) {
     const [results, rows, fields] = await db.execute(
       `
         DELETE FROM schedule_events 
-        WHERE event_id = "${eventId}";
-      `,
+        WHERE event_id = ?;
+      `,[eventId],
     );
 
     console.log(results)
@@ -364,9 +376,11 @@ async function deleteEvent(eventId){
 
     await deleteScheduleEventsForEventId(eventId);
 
-    const [results,rows,fields] = await db.execute(`
-      DELETE FROM events 
-      WHERE id="${eventId}";`
+    const [results,rows,fields] = await db.execute(
+      `
+       DELETE FROM events 
+       WHERE id= ?;
+      `,[eventId],
     );
 
     console.log(results)

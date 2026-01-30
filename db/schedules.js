@@ -36,8 +36,8 @@ async function attachEventsToScheduleById(scheduleId) {
         SELECT users.username AS owner_name, schedules.id AS schedule_id, schedules.user_id
         FROM schedules 
         INNER JOIN users ON schedules.user_id = users.id
-        WHERE schedules.id='${scheduleId}';
-      `
+        WHERE schedules.id= ?;
+      `,[scheduleId],
     );
 
     if (userSchedule){
@@ -47,8 +47,8 @@ async function attachEventsToScheduleById(scheduleId) {
           events.date_time, events.spots_available, events.meeting_link, schedule_events.id AS schedule_events_id, events.is_Active, events.additional_info
           FROM events
           INNER JOIN schedule_events ON schedule_events.event_id = events.id
-          WHERE schedule_events.schedule_id='${scheduleId}';
-        `
+          WHERE schedule_events.schedule_id= ?;
+        `,[scheduleId],
       );
 
       // const userSchedule = scheduleWithUser[1];
@@ -100,20 +100,13 @@ async function getScheduleWithEventsByUserId(userId) {
     const scheduleIdArray = []
     const allSchedules = []
 
-    // const [schedules] = await db.execute(`
-    //   SELECT *
-    //   FROM schedules
-    //   WHERE user_id = ${userId};`
-    // );
-
-const [schedules] = await db.execute(
-  `
-  SELECT *
-  FROM schedules
-  WHERE user_id = ?;
-  `,
-  [userId]
-);
+    const [schedules] = await db.execute(
+      `
+       SELECT *
+       FROM schedules
+       WHERE user_id = ?;
+      `,[userId],
+    );
 
     schedules.map(schedule => scheduleIdArray.push(schedule.id))
 
@@ -135,19 +128,13 @@ const [schedules] = await db.execute(
 async function getScheduleByUserId(userId) {
   try {
 
-    // const [scheduleByUserId] = await db.execute(`
-    //   SELECT *
-    //   FROM schedules
-    //   WHERE user_id = ${userId};`
-    // );
-const [scheduleByUserId] = await db.execute(
-  `
-  SELECT *
-  FROM schedules
-  WHERE user_id = ?;
-  `,
-  [userId]
-);
+    const [scheduleByUserId] = await db.execute(
+      `
+       SELECT *
+       FROM schedules
+       WHERE user_id = ?;
+      `,[userId],
+    );
 
     console.log("Schedule by User Id", userId, "->", scheduleByUserId[0]);
     return scheduleByUserId[0];
@@ -162,10 +149,12 @@ const [scheduleByUserId] = await db.execute(
 async function getScheduleById(id) {
   try {
 
-    const [scheduleById] = await db.execute(`
-      SELECT *
-      FROM schedules
-      WHERE id = "${id}";`
+    const [scheduleById] = await db.execute(
+      `
+       SELECT *
+       FROM schedules
+       WHERE id = ?;
+      `,[id],
     );
 
     console.log("Schedule by Id", id, "->", scheduleById);
@@ -181,11 +170,13 @@ async function getScheduleById(id) {
 async function getScheduleOwnerByScheduleId(id) {
   try {
 
-    const [scheduleOwner] = await db.execute(`
-      SELECT users.username
-      FROM schedules
-      INNER JOIN users ON schedules.user_id = users.id
-      WHERE schedules.id = "${id}";`
+    const [scheduleOwner] = await db.execute(
+      `
+       SELECT users.username
+       FROM schedules
+       INNER JOIN users ON schedules.user_id = users.id
+       WHERE schedules.id = ?;
+      `,[id],
     );
 
     console.log("Schedule id", id, "owner ->", scheduleOwner[0].username);
@@ -204,8 +195,8 @@ async function deleteScheduleEventsForScheduleId(scheduleId) {
     const [results, rows, fields] = await db.execute(
       `
         DELETE FROM schedule_events 
-        WHERE schedule_id = "${scheduleId}";
-      `,
+        WHERE schedule_id = ?;
+      `,[scheduleId],
     );
 
     console.log(results)
@@ -230,9 +221,11 @@ async function deleteSchedule(scheduleId){
 
     await deleteScheduleEventsForScheduleId(scheduleId);
 
-    const [results,rows,fields] = await db.execute(`
-      DELETE FROM schedules 
-      WHERE id="${scheduleId}";`
+    const [results,rows,fields] = await db.execute(
+      `
+       DELETE FROM schedules 
+       WHERE id= ?;
+      `,[scheduleId],
     );
 
     console.log(results)
