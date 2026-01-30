@@ -8,7 +8,6 @@ async function createUser(user) {
     const { name, email, username, password,
       security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3 } = user;
 
-    // Hash the password and security answers inside the createUser function
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedAnswer1 = security_answer_1 ? await bcrypt.hash(security_answer_1, 10) : null;
     const hashedAnswer2 = security_answer_2 ? await bcrypt.hash(security_answer_2, 10) : null;
@@ -134,24 +133,21 @@ async function getUserbyUserName(username) {
 
 async function getUserbyUserNameOrEmail(username, email) {
   try {
-    const [userByUserNameOrEmail] = await db.execute(`
+    const [rows] = await db.execute(
+      `
       SELECT * 
       FROM users 
-      WHERE username = "${username}" 
-      OR email = "${email}"; 
-    `);
+      WHERE username = ? OR email = ?;
+      `,
+      [username, email]
+    );
 
-    if (userByUserNameOrEmail[0]) {
-      delete userByUserNameOrEmail[0].password
-      if (userByUserNameOrEmail[1]) {
-        delete userByUserNameOrEmail[1].password
-      }
-      console.log("User By UserName:", username, ", or email:", email, "->", userByUserNameOrEmail)
-      return userByUserNameOrEmail;
+    if (rows.length > 0) {
+      rows.forEach(user => delete user.password);
+      return rows;
     } else {
-      return ("Username or email ok to use")
+      return "Username or email ok to use";
     }
-
   } catch (error) {
     console.error("error getting user by username or email");
     throw error;
