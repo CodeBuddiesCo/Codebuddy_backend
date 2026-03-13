@@ -491,17 +491,15 @@ usersRouter.post('/forgot-password', async (req, res) => {
     const user = await getUserByEmail(email);
     console.log("Found user:", user);
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    if (user) {
+      const token = generateResetToken(email);
+      await sendPasswordResetEmail(email, token);
     }
 
-    const token = generateResetToken(email);
-    await sendPasswordResetEmail(email, token);
-
-    res.json({ message: 'Password reset email sent' });
+    res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
+    console.error('Error in forgot-password:', err.message || err);
+    res.status(500).json({ error: 'Error sending email. Please try again later.' });
   }
 });
 
@@ -523,7 +521,7 @@ usersRouter.post('/reset-password-token', async (req, res) => {
       [hashedPassword, email]
     );
 
-    res.json({ message: 'If an account exists for that email, your username has been sent.' });
+    res.json({ message: 'Password has been reset successfully.' });
   } catch (err) {
     console.error(err);
     res.status(400).json({ error: 'Invalid or expired token' });
@@ -544,8 +542,8 @@ usersRouter.post('/forgot-username', async (req, res) => {
 
     res.json({ message: 'If an account exists for that email, your username has been sent.' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
+    console.error('Error in forgot-username:', err.message || err);
+    res.status(500).json({ error: 'Error sending email. Please try again later.' });
   }
 });
 
