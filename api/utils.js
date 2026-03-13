@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function requireUser(req, res, next) {
   if (!req.user) {
@@ -51,25 +53,12 @@ function validateToken(req, res, next) {
   });
 }
 
-const transporter = nodemailer.createTransport({
-  host: 'mail.privateemail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-});
-
 async function sendPasswordResetEmail(to, token) {
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const resetUrl = `${baseUrl}/user/reset-password?token=${token}`;
 
-  await transporter.sendMail({
-    from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: 'CodeBuddies <onboarding@resend.dev>',
     to,
     subject: 'Reset Your Password',
     html: `
@@ -78,11 +67,15 @@ async function sendPasswordResetEmail(to, token) {
       <p><a href="${resetUrl}">${resetUrl}</a></p>
     `,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 async function sendUsernameEmail(to, username) {
-  await transporter.sendMail({
-    from: `"CodeBuddies" <${process.env.EMAIL_USER}>`,
+  const { error } = await resend.emails.send({
+    from: 'CodeBuddies <onboarding@resend.dev>',
     to,
     subject: 'Your CodeBuddies Username',
     html: `
@@ -90,6 +83,10 @@ async function sendUsernameEmail(to, username) {
       <p>Your username is: <strong>${username}</strong></p>
     `,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 module.exports = {
