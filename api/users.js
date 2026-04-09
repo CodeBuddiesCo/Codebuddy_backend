@@ -13,6 +13,7 @@ const {
   createMessage,
   getMessagesForUser,
   markMessageAsDeleted,
+  restoreMessage,
   deleteOldMarkedMessages,
   getDeletedMessagesForUser,
   getUserById,
@@ -212,6 +213,18 @@ usersRouter.delete('/message/:messageId', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error marking message for deletion');
+  }
+});
+
+// Restore a deleted message
+usersRouter.put('/message/restore/:messageId', async (req, res) => {
+  try {
+    const messageId = req.params.messageId;
+    await restoreMessage(messageId);
+    res.status(200).send('Message restored');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error restoring message');
   }
 });
 

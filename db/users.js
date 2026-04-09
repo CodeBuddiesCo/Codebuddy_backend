@@ -293,6 +293,21 @@ async function markMessageAsDeleted(messageId) {
   }
 }
 
+// Restore a deleted message
+async function restoreMessage(messageId) {
+  try {
+    await db.execute(`
+      UPDATE messages
+      SET marked_for_deletion = FALSE
+      WHERE id = ?;
+    `, [messageId]);
+    console.log("Message restored");
+  } catch (error) {
+    console.error("Error restoring message:", error);
+    throw error;
+  }
+}
+
 // Delete old marked messages
 async function deleteOldMarkedMessages() {
   try {
@@ -543,6 +558,7 @@ module.exports = {
   createMessage,
   getMessagesForUser,
   markMessageAsDeleted,
+  restoreMessage,
   deleteOldMarkedMessages,
   getDeletedMessagesForUser,
   updateUserById,

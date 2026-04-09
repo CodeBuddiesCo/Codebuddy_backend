@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
-const sgMail = require('@sendgrid/mail');
+const { Resend } = require('resend');
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const EMAIL_FROM = process.env.EMAIL_FROM || 'catherine.mugnai@gmail.com';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'admin@codebuddies.biz';
 
 function requireUser(req, res, next) {
   if (!req.user) {
@@ -59,8 +59,8 @@ async function sendPasswordResetEmail(to, token) {
   const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   const resetUrl = `${baseUrl}/user/reset-password?token=${token}`;
 
-  await sgMail.send({
-    from: { email: EMAIL_FROM, name: 'CodeBuddies' },
+  await resend.emails.send({
+    from: `CodeBuddies <${EMAIL_FROM}>`,
     to,
     subject: 'Reset Your Password',
     html: `
@@ -72,8 +72,8 @@ async function sendPasswordResetEmail(to, token) {
 }
 
 async function sendUsernameEmail(to, username) {
-  await sgMail.send({
-    from: { email: EMAIL_FROM, name: 'CodeBuddies' },
+  await resend.emails.send({
+    from: `CodeBuddies <${EMAIL_FROM}>`,
     to,
     subject: 'Your CodeBuddies Username',
     html: `
