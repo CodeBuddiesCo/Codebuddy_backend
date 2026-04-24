@@ -92,16 +92,19 @@ async function getUserById(id) {
     delete user.password;
 
     const [languageRows] = await db.execute(`
-      SELECT programming_language
+      SELECT programming_language, proficiency
       FROM user_languages
       WHERE user_id = ?
     `, [id]);
     console.log("Programming languages fetched for user:", languageRows);
 
-    const programmingLanguages = languageRows.map(row => row.programming_language);
-    console.log("Programming languages for user by Id", id, "->", programmingLanguages);
-
-    user.programmingLanguages = programmingLanguages;
+    user.highProficiencyLanguages = languageRows
+      .filter(row => row.proficiency === 'high')
+      .map(row => row.programming_language);
+    user.intermediateProficiencyLanguages = languageRows
+      .filter(row => row.proficiency === 'intermediate')
+      .map(row => row.programming_language);
+    user.programmingLanguages = languageRows.map(row => row.programming_language);
 
     console.log("User by Id", id, "->", user);
     return user;
@@ -370,15 +373,38 @@ async function updateUserById(userId, updatedInfo, programmingLanguages = null) 
   }
 }
 
-async function updateUserProgrammingLanguages(userId, programmingLanguages) {
+async function updateUserProgrammingLanguages(userId, languagesInput) {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
     await connection.query('DELETE FROM user_languages WHERE user_id = ?', [userId]);
 
-    for (const language of programmingLanguages) {
-      await connection.query('INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)', [userId, language]);
+    // Accepts either shape:
+    //   - Array of strings (legacy): inserted with the column default proficiency='intermediate'
+    //   - { high, intermediate }: inserted with the matching proficiency
+    if (Array.isArray(languagesInput)) {
+      for (const language of languagesInput) {
+        await connection.query(
+          'INSERT INTO user_languages (user_id, programming_language) VALUES (?, ?)',
+          [userId, language]
+        );
+      }
+    } else if (languagesInput && typeof languagesInput === 'object') {
+      const high = Array.isArray(languagesInput.high) ? languagesInput.high : [];
+      const intermediate = Array.isArray(languagesInput.intermediate) ? languagesInput.intermediate : [];
+      for (const language of high) {
+        await connection.query(
+          'INSERT INTO user_languages (user_id, programming_language, proficiency) VALUES (?, ?, ?)',
+          [userId, language, 'high']
+        );
+      }
+      for (const language of intermediate) {
+        await connection.query(
+          'INSERT INTO user_languages (user_id, programming_language, proficiency) VALUES (?, ?, ?)',
+          [userId, language, 'intermediate']
+        );
+      }
     }
 
     await connection.commit();
