@@ -314,16 +314,48 @@ usersRouter.get('/me', requireUser, async (req, res) => {
 // Update a user by ID
 usersRouter.put('/:id', requireUser, async (req, res) => {
   const userId = req.user.id;
-  const { programmingLanguages, ...updatedInfo } = req.body;
-  
+  const {
+    highProficiencyLanguages,
+    intermediateProficiencyLanguages,
+    programmingLanguages,
+    ...updatedInfo
+  } = req.body;
+
   try {
-     // Update general user information
-     await updateUserById(userId, updatedInfo);
-    
-     // Update programming languages if provided
-     if (programmingLanguages) {
-       await updateUserProgrammingLanguages(userId, programmingLanguages);
-     }
+    const isNewShape =
+      Array.isArray(highProficiencyLanguages) ||
+      Array.isArray(intermediateProficiencyLanguages);
+
+    if (isNewShape) {
+      const high = Array.isArray(highProficiencyLanguages) ? highProficiencyLanguages : [];
+      const intermediate = Array.isArray(intermediateProficiencyLanguages)
+        ? intermediateProficiencyLanguages
+        : [];
+      updatedInfo.primary_language = high[0] || '';
+      updatedInfo.secondary_language = high[1] || '';
+      await updateUserById(userId, updatedInfo);
+      await updateUserProgrammingLanguages(userId, { high, intermediate });
+    } else {
+      // Legacy shape: adapt it to the new shape so 'high' markers are preserved
+      await updateUserById(userId, updatedInfo);
+      if (programmingLanguages) {
+        const legacyHigh = [];
+        if (updatedInfo.primary_language) legacyHigh.push(updatedInfo.primary_language);
+        if (
+          updatedInfo.secondary_language &&
+          updatedInfo.secondary_language !== updatedInfo.primary_language
+        ) {
+          legacyHigh.push(updatedInfo.secondary_language);
+        }
+        const legacyIntermediate = Array.isArray(programmingLanguages)
+          ? programmingLanguages.filter(lang => !legacyHigh.includes(lang))
+          : [];
+        await updateUserProgrammingLanguages(userId, {
+          high: legacyHigh,
+          intermediate: legacyIntermediate,
+        });
+      }
+    }
     res.status(200).json({ message: 'User updated successfully' });
   } catch (error) {
     console.error(error);
