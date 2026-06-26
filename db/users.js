@@ -489,36 +489,6 @@ async function resetPassword(username, newPassword) {
   }
 }
 
-// Update Security Questions
-async function updateSecurityQuestionsAndAnswers(userId, security_question_1, security_answer_1, security_question_2, security_answer_2, security_question_3, security_answer_3) {
-  try {
-    const hashedAnswer1 = security_answer_1 ? await bcrypt.hash(security_answer_1, saltRounds) : null;
-    const hashedAnswer2 = security_answer_2 ? await bcrypt.hash(security_answer_2, saltRounds) : null;
-    const hashedAnswer3 = security_answer_3 ? await bcrypt.hash(security_answer_3, saltRounds) : null;
-
-    const [result] = await db.execute(`
-      UPDATE users 
-      SET security_question_1 = ?, security_answer_1 = ?,
-          security_question_2 = ?, security_answer_2 = ?,
-          security_question_3 = ?, security_answer_3 = ?
-      WHERE id = ?;
-    `, [security_question_1, hashedAnswer1, security_question_2, hashedAnswer2, security_question_3, hashedAnswer3, userId]);
-
-    console.log("Attempted to update security questions and answers for user ID:", userId);
-
-    if (result.affectedRows > 0) {
-      console.log("Security questions and answers updated successfully for user ID:", userId);
-      return true;
-    } else {
-      console.log("No user found with ID:", userId);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error updating security questions and answers:", error);
-    throw error;
-  }
-}
-
 // Fetch User Follows
 
 async function getUsersFollowedByUser(userId) {
@@ -592,7 +562,6 @@ module.exports = {
   getSecurityQuestions,
   verifySecurityAnswers,
   resetPassword,
-  updateSecurityQuestionsAndAnswers,
   demoteUserFromBuddy,
   getUsersFollowedByUser,
   followUser,
